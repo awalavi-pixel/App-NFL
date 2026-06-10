@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>#NoWasteMakeTaste – National Foods</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SPLASH SCREEN
+══════════════════════════════════════════ -->
+<div id="splash" class="screen active">
+  <div class="splash-bg">
+    <div class="splash-rings">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+    </div>
+    <div class="splash-content">
+      <div class="splash-logo">
+        <img src="assets/logo.png" alt="National Foods" class="logo-img" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'" />
+        <div id="logo-fallback" class="logo-fallback" style="display:none">
+          <div class="logo-fallback-inner">
+            <span class="logo-nf">National<br/>Foods</span>
+            <span class="logo-since">SINCE 1970</span>
+          </div>
+        </div>
+      </div>
+      <h1 class="splash-title">#NoWasteMakeTaste</h1>
+      <p class="splash-tagline">Turn Leftovers Into Delicious Possibilities</p>
+      <div class="splash-loader">
+        <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+        <p class="loader-text" id="loaderText">Loading your kitchen…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ONBOARDING
+══════════════════════════════════════════ -->
+<div id="onboarding" class="screen">
+  <div class="onboarding-wrap">
+    <div class="onboarding-slides" id="onboardingSlides">
+
+      <div class="ob-slide active" data-slide="0">
+        <div class="ob-visual ob-v1">
+          <div class="ob-icon-ring">
+            <span class="ob-emoji">🥗</span>
+          </div>
+          <div class="floating-badge fb1">+50 pts</div>
+          <div class="floating-badge fb2">♻️ Eco</div>
+        </div>
+        <h2>Zero Waste Kitchen</h2>
+        <p>Transform your leftovers into restaurant-quality meals with National Foods Mayo — and earn rewards while saving the planet.</p>
+      </div>
+
+      <div class="ob-slide" data-slide="1">
+        <div class="ob-visual ob-v2">
+          <div class="ob-icon-ring">
+            <span class="ob-emoji">🤖</span>
+          </div>
+          <div class="floating-badge fb1">AI Chef</div>
+          <div class="floating-badge fb3">🌶️ Spicy</div>
+        </div>
+        <h2>AI Recipe Magic</h2>
+        <p>Tell us what's in your fridge. Our AI chef crafts personalised recipes using National Mayo in seconds — no food wasted, all taste gained.</p>
+      </div>
+
+      <div class="ob-slide" data-slide="2">
+        <div class="ob-visual ob-v3">
+          <div class="ob-icon-ring">
+            <span class="ob-emoji">🏆</span>
+          </div>
+          <div class="floating-badge fb1">Gold Tier</div>
+          <div class="floating-badge fb2">500 pts</div>
+        </div>
+        <h2>Earn & Redeem</h2>
+        <p>Join challenges, post recipes, return bottles — climb loyalty tiers from Starter to NFL Master Creator and unlock exclusive rewards.</p>
+      </div>
+
+    </div>
+
+    <div class="ob-dots" id="obDots">
+      <span class="ob-dot active"></span>
+      <span class="ob-dot"></span>
+      <span class="ob-dot"></span>
+    </div>
+
+    <div class="ob-actions">
+      <button class="btn-secondary" id="obSkip">Skip</button>
+      <button class="btn-primary" id="obNext">Next →</button>
+    </div>
+
+    <div class="ob-logo-small">
+      <img src="assets/logo.png" alt="National Foods" onerror="this.style.display='none'" />
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP SHELL
+══════════════════════════════════════════ -->
+<div id="app" class="screen">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <img src="assets/logo.png" alt="NFL" class="header-logo" onerror="this.style.display='none'" />
+      <div class="header-brand">
+        <span class="brand-name">#NoWasteMakeTaste</span>
+        <span class="brand-sub">National Foods</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="points-pill" id="headerPoints">
+        <span class="pts-icon">⭐</span>
+        <span id="hdrPts">0</span> pts
+      </div>
+      <div class="notif-btn" id="notifBtn">🔔</div>
+    </div>
+  </header>
+
+  <!-- Page Container -->
+  <main class="page-container" id="pageContainer">
+
+    <!-- ── HOME ────────────────────────────── -->
+    <section class="page active" id="pageHome">
+      <div class="home-hero">
+        <div class="hero-greeting">
+          <h2>Good day, <span id="heroName">Chef</span>! 👋</h2>
+          <p>What's left in your kitchen today?</p>
+        </div>
+        <div class="tier-badge" id="heroBadge">
+          <span id="heroBadgeIcon">🌱</span>
+          <span id="heroBadgeTier">Starter</span>
+        </div>
+      </div>
+
+      <div class="quick-stats">
+        <div class="qs-card">
+          <span class="qs-icon">⭐</span>
+          <span class="qs-val" id="qsPoints">0</span>
+          <span class="qs-lbl">Points</span>
+        </div>
+        <div class="qs-card">
+          <span class="qs-icon">🍽️</span>
+          <span class="qs-val" id="qsMeals">0</span>
+          <span class="qs-lbl">Meals Saved</span>
+        </div>
+        <div class="qs-card">
+          <span class="qs-icon">♻️</span>
+          <span class="qs-val" id="qsBottles">0</span>
+          <span class="qs-lbl">Bottles Returned</span>
+        </div>
+        <div class="qs-card">
+          <span class="qs-icon">🔥</span>
+          <span class="qs-val" id="qsStreak">0</span>
+          <span class="qs-lbl">Day Streak</span>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h3>Quick Actions</h3>
+      </div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="navigate('recipe')">
+          <span class="qa-icon">🤖</span>
+          <span>AI Recipe</span>
+        </button>
+        <button class="qa-btn" onclick="navigate('challenges')">
+          <span class="qa-icon">🏆</span>
+          <span>Challenges</span>
+        </button>
+        <button class="qa-btn" onclick="navigate('recycle')">
+          <span class="qa-icon">♻️</span>
+          <span>Return Bottle</span>
+        </button>
+        <button class="qa-btn" onclick="navigate('community')">
+          <span class="qa-icon">📸</span>
+          <span>Community</span>
+        </button>
+      </div>
+
+      <div class="section-header">
+        <h3>Today's Challenge</h3>
+        <a class="see-all" onclick="navigate('challenges')">See all</a>
+      </div>
+      <div class="featured-challenge">
+        <div class="fc-badge">🌶️ Hot</div>
+        <h4>Mayo Master Challenge</h4>
+        <p>Create the most creative mayo recipe using only 5 ingredients</p>
+        <div class="fc-meta">
+          <span>🏅 200 pts</span>
+          <span>👥 1,247 joined</span>
+          <span>⏰ 2 days left</span>
+        </div>
+        <button class="btn-primary fc-btn" onclick="joinChallenge('mayo-master', 200)">Join Now</button>
+      </div>
+
+      <div class="section-header">
+        <h3>Trending Recipes</h3>
+        <a class="see-all" onclick="navigate('community')">See all</a>
+      </div>
+      <div class="trending-scroll">
+        <div class="trend-card" onclick="navigate('recipe')">
+          <div class="trend-thumb">🥙</div>
+          <p class="trend-name">Mayo Chicken Wrap</p>
+          <span class="trend-pts">+30 pts</span>
+        </div>
+        <div class="trend-card" onclick="navigate('recipe')">
+          <div class="trend-thumb">🍚</div>
+          <p class="trend-name">Creamy Mayo Rice Bowl</p>
+          <span class="trend-pts">+25 pts</span>
+        </div>
+        <div class="trend-card" onclick="navigate('recipe')">
+          <div class="trend-thumb">🥗</div>
+          <p class="trend-name">Leftover Veggie Toast</p>
+          <span class="trend-pts">+20 pts</span>
+        </div>
+        <div class="trend-card" onclick="navigate('recipe')">
+          <div class="trend-thumb">🍟</div>
+          <p class="trend-name">Spicy Mayo Fries</p>
+          <span class="trend-pts">+15 pts</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AI RECIPE GENERATOR ─────────────── -->
+    <section class="page" id="pageRecipe">
+      <div class="page-hero recipe-hero">
+        <h2>🤖 AI Recipe Generator</h2>
+        <p>Tell the AI what's in your kitchen</p>
+      </div>
+
+      <div class="recipe-form card">
+        <div class="form-group">
+          <label>🥕 What leftovers do you have?</label>
+          <div class="ingredient-input-wrap">
+            <input type="text" id="ingredientInput" placeholder="e.g. chicken, bread, eggs…" class="form-input" />
+            <button class="add-ingr-btn" onclick="addIngredient()">+</button>
+          </div>
+          <div class="ingredient-tags" id="ingredientTags"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label>🍽️ Meal Type</label>
+            <select id="mealType" class="form-select">
+              <option value="any">Any</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>🌶️ Spice Level</label>
+            <select id="spiceLevel" class="form-select">
+              <option value="mild">Mild</option>
+              <option value="medium">Medium</option>
+              <option value="hot">Hot 🔥</option>
+              <option value="extra-hot">Extra Hot 🌋</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label>⏱️ Cooking Time</label>
+            <select id="cookTime" class="form-select">
+              <option value="5">5 minutes</option>
+              <option value="10">10 minutes</option>
+              <option value="20">20 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="45">45+ minutes</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>🥦 Dietary Pref</label>
+            <select id="dietPref" class="form-select">
+              <option value="none">No Preference</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="gluten-free">Gluten Free</option>
+              <option value="low-carb">Low Carb</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary generate-btn" id="generateBtn" onclick="generateRecipe()">
+          <span class="btn-icon">✨</span> Generate AI Recipe
+        </button>
+      </div>
+
+      <!-- AI Thinking Animation -->
+      <div class="ai-thinking" id="aiThinking" style="display:none">
+        <div class="thinking-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <p>AI is crafting your recipe…</p>
+      </div>
+
+      <!-- Recipe Result -->
+      <div id="recipeResult" style="display:none">
+        <div class="recipe-result-card card">
+          <div class="rr-header">
+            <span class="rr-emoji" id="rrEmoji">🍽️</span>
+            <div>
+              <h3 id="rrName">Recipe Name</h3>
+              <div class="rr-meta">
+                <span id="rrTime">⏱️ 15 min</span>
+                <span id="rrDiff">👨‍🍳 Easy</span>
+                <span id="rrServings">👥 2 servings</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rr-impact">
+            <div class="impact-chip"><span>🌱</span> <span id="rrWaste">0.3 kg</span> waste saved</div>
+            <div class="impact-chip pts-chip"><span>⭐</span> <span id="rrPts">30</span> pts earned</div>
+          </div>
+
+          <div class="rr-section">
+            <h4>📦 Ingredients</h4>
+            <ul id="rrIngredients" class="rr-list"></ul>
+          </div>
+
+          <div class="rr-section">
+            <h4>👨‍🍳 Steps</h4>
+            <ol id="rrSteps" class="rr-steps"></ol>
+          </div>
+
+          <div class="nfl-product-badge">
+            <img src="assets/logo.png" alt="NFL" onerror="this.style.display='none'" />
+            <div>
+              <span class="badge-label">Featured Product</span>
+              <span id="rrProduct" class="badge-product">National Mayo</span>
+            </div>
+          </div>
+
+          <div class="rr-actions">
+            <button class="btn-primary" onclick="saveRecipe()">💾 Save Recipe</button>
+            <button class="btn-secondary" onclick="shareRecipe()">📤 Share to Community</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CHALLENGES ──────────────────────── -->
+    <section class="page" id="pageChallenges">
+      <div class="page-hero">
+        <h2>🏆 Weekly Challenges</h2>
+        <p>Join, cook, earn — dominate the leaderboard</p>
+      </div>
+
+      <div class="challenge-stats">
+        <div class="cstat"><span class="cstat-n" id="csJoined">0</span><span>Joined</span></div>
+        <div class="cstat"><span class="cstat-n" id="csEarned">0</span><span>Pts Earned</span></div>
+        <div class="cstat"><span class="cstat-n">5</span><span>Active</span></div>
+      </div>
+
+      <div class="challenges-list" id="challengesList"></div>
+    </section>
+
+    <!-- ── COMMUNITY ───────────────────────── -->
+    <section class="page" id="pageCommunity">
+      <div class="page-hero">
+        <h2>📸 Community Feed</h2>
+        <p>See what Pakistan is cooking!</p>
+      </div>
+
+      <div class="community-tabs">
+        <button class="ctab active" onclick="filterFeed('all', this)">All</button>
+        <button class="ctab" onclick="filterFeed('trending', this)">🔥 Trending</button>
+        <button class="ctab" onclick="filterFeed('challenges', this)">🏆 Challenges</button>
+      </div>
+
+      <button class="btn-primary post-btn" onclick="openPostModal()">📸 Post Your Recipe</button>
+
+      <div class="community-feed" id="communityFeed"></div>
+    </section>
+
+    <!-- ── LOYALTY WALLET ──────────────────── -->
+    <section class="page" id="pageWallet">
+      <div class="wallet-hero">
+        <img src="assets/logo.png" alt="NFL" class="wallet-logo" onerror="this.style.display='none'" />
+        <div class="wallet-points-big">
+          <span class="wallet-pts" id="walletPts">0</span>
+          <span class="wallet-pts-lbl">Total Points</span>
+        </div>
+        <div class="wallet-tier" id="walletTier">
+          <span id="walletTierIcon">🌱</span>
+          <span id="walletTierName">Starter</span>
+        </div>
+      </div>
+
+      <div class="tier-progress-card card">
+        <div class="tp-header">
+          <span>Progress to next tier</span>
+          <span id="tpNext">Kitchen Explorer</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="tierProgressFill"></div>
+        </div>
+        <div class="tp-footer">
+          <span id="tpCurrent">0 pts</span>
+          <span id="tpTarget">500 pts</span>
+        </div>
+      </div>
+
+      <div class="section-header"><h3>All Tiers</h3></div>
+      <div class="tiers-list" id="tiersList"></div>
+
+      <div class="section-header"><h3>Point History</h3></div>
+      <div class="points-history" id="pointsHistory"></div>
+    </section>
+
+    <!-- ── RECYCLE ─────────────────────────── -->
+    <section class="page" id="pageRecycle">
+      <div class="page-hero recycle-hero">
+        <h2>♻️ Bottle Return</h2>
+        <p>Return National Mayo bottles, earn points, help the planet</p>
+      </div>
+
+      <div class="recycle-machine card">
+        <div class="vm-visual">
+          <div class="vm-body">
+            <div class="vm-screen">
+              <div class="vm-logo">
+                <img src="assets/logo.png" alt="NFL" onerror="this.style.display='none'" />
+              </div>
+              <p class="vm-status" id="vmStatus">Ready to scan</p>
+              <div class="vm-scanner" id="vmScanner">
+                <div class="scanner-line"></div>
+              </div>
+            </div>
+            <div class="vm-slot">
+              <span>INSERT BOTTLE</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary vm-btn" id="scanBtn" onclick="scanBottle()">
+          📱 Scan Bottle QR
+        </button>
+      </div>
+
+      <div class="recycle-stats">
+        <div class="rs-card">
+          <span class="rs-icon">♻️</span>
+          <span class="rs-val" id="rsBottles">0</span>
+          <span class="rs-lbl">Bottles Returned</span>
+        </div>
+        <div class="rs-card">
+          <span class="rs-icon">🧴</span>
+          <span class="rs-val" id="rsPlastic">0g</span>
+          <span class="rs-lbl">Plastic Saved</span>
+        </div>
+        <div class="rs-card">
+          <span class="rs-icon">🌍</span>
+          <span class="rs-val" id="rsCarbon">0g</span>
+          <span class="rs-lbl">CO₂ Reduced</span>
+        </div>
+        <div class="rs-card">
+          <span class="rs-icon">⭐</span>
+          <span class="rs-val" id="rsPoints">0</span>
+          <span class="rs-lbl">Points Earned</span>
+        </div>
+      </div>
+
+      <div class="recycle-history card">
+        <h4>Return History</h4>
+        <div id="recycleHistory" class="rh-list"></div>
+      </div>
+    </section>
+
+    <!-- ── SUSTAINABILITY ──────────────────── -->
+    <section class="page" id="pageSustain">
+      <div class="page-hero sustain-hero">
+        <h2>🌍 Sustainability Dashboard</h2>
+        <p>Your personal environmental impact</p>
+      </div>
+
+      <div class="sustain-impact-grid">
+        <div class="si-card si-meals">
+          <div class="si-icon">🍽️</div>
+          <div class="si-val" id="siMeals">0</div>
+          <div class="si-lbl">Meals Saved</div>
+          <div class="si-sub">from going to waste</div>
+        </div>
+        <div class="si-card si-food">
+          <div class="si-icon">🌱</div>
+          <div class="si-val" id="siFoodWaste">0.0 kg</div>
+          <div class="si-lbl">Food Waste Reduced</div>
+          <div class="si-sub">total waste diverted</div>
+        </div>
+        <div class="si-card si-bottles">
+          <div class="si-icon">♻️</div>
+          <div class="si-val" id="siBottlesR">0</div>
+          <div class="si-lbl">Bottles Recycled</div>
+          <div class="si-sub">and counting!</div>
+        </div>
+        <div class="si-card si-plastic">
+          <div class="si-icon">🧴</div>
+          <div class="si-val" id="siPlastic">0g</div>
+          <div class="si-lbl">Plastic Diverted</div>
+          <div class="si-sub">from landfill</div>
+        </div>
+        <div class="si-card si-carbon">
+          <div class="si-icon">🌍</div>
+          <div class="si-val" id="siCarbon">0g</div>
+          <div class="si-lbl">CO₂ Equivalent</div>
+          <div class="si-sub">emissions avoided</div>
+        </div>
+        <div class="si-card si-community">
+          <div class="si-icon">👥</div>
+          <div class="si-val">47,812</div>
+          <div class="si-lbl">Community Impact</div>
+          <div class="si-sub">meals saved together</div>
+        </div>
+      </div>
+
+      <div class="sustain-progress card">
+        <h4>Monthly Goals</h4>
+        <div class="goal-item">
+          <div class="goal-header"><span>🍽️ Meals Saved</span><span id="goalMeals">0 / 10</span></div>
+          <div class="progress-bar"><div class="progress-fill green" id="pfMeals" style="width:0%"></div></div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-header"><span>♻️ Bottles Returned</span><span id="goalBottles">0 / 5</span></div>
+          <div class="progress-bar"><div class="progress-fill green" id="pfBottles" style="width:0%"></div></div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-header"><span>🏆 Challenges Joined</span><span id="goalChallenges">0 / 3</span></div>
+          <div class="progress-bar"><div class="progress-fill green" id="pfChallenges" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="sustain-cert card" id="sustainCert">
+        <div class="cert-header">
+          <img src="assets/logo.png" alt="NFL" onerror="this.style.display='none'" />
+          <h4>Eco Warrior Certificate</h4>
+        </div>
+        <p>You're making a real difference! Keep saving food and returning bottles to earn your official NFL Sustainability Champion badge.</p>
+        <div class="cert-progress">
+          <span id="certPts">0</span> / 1000 pts to Champion Badge
+        </div>
+      </div>
+    </section>
+
+    <!-- ── REWARDS ─────────────────────────── -->
+    <section class="page" id="pageRewards">
+      <div class="page-hero rewards-hero">
+        <h2>🎁 Rewards Store</h2>
+        <p>Spend your points on exclusive National Foods rewards</p>
+      </div>
+
+      <div class="wallet-mini">
+        <span>⭐ Your Balance:</span>
+        <span class="wm-pts" id="rewardsPts">0 pts</span>
+      </div>
+
+      <div class="section-header"><h3>Available Rewards</h3></div>
+      <div class="rewards-grid" id="rewardsGrid"></div>
+
+      <div class="section-header"><h3>Redeemed</h3></div>
+      <div class="redeemed-list" id="redeemedList">
+        <p class="empty-state">No rewards redeemed yet. Start earning!</p>
+      </div>
+    </section>
+
+    <!-- ── ADMIN ───────────────────────────── -->
+    <section class="page" id="pageAdmin">
+      <div class="page-hero admin-hero">
+        <h2>📊 Brand Dashboard</h2>
+        <p>National Foods — #NoWasteMakeTaste Analytics</p>
+      </div>
+
+      <div class="admin-kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-icon">👥</span>
+          <span class="kpi-val">84,291</span>
+          <span class="kpi-lbl">Total Users</span>
+          <span class="kpi-trend up">↑ 12%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon">📲</span>
+          <span class="kpi-val">112,540</span>
+          <span class="kpi-lbl">App Downloads</span>
+          <span class="kpi-trend up">↑ 8%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon">🤖</span>
+          <span class="kpi-val">340,872</span>
+          <span class="kpi-lbl">Recipes Generated</span>
+          <span class="kpi-trend up">↑ 23%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon">🏆</span>
+          <span class="kpi-val">28,450</span>
+          <span class="kpi-lbl">Challenges Joined</span>
+          <span class="kpi-trend up">↑ 17%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon">♻️</span>
+          <span class="kpi-val">19,834</span>
+          <span class="kpi-lbl">Bottles Returned</span>
+          <span class="kpi-trend up">↑ 31%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon">🎁</span>
+          <span class="kpi-val">6,291</span>
+          <span class="kpi-lbl">Rewards Redeemed</span>
+          <span class="kpi-trend up">↑ 5%</span>
+        </div>
+      </div>
+
+      <div class="admin-charts-row">
+        <div class="admin-chart-card card">
+          <h4>Top Leftover Ingredients</h4>
+          <div class="bar-chart" id="ingredientChart"></div>
+        </div>
+        <div class="admin-chart-card card">
+          <h4>Most Used NFL Products</h4>
+          <div class="bar-chart" id="productChart"></div>
+        </div>
+      </div>
+
+      <div class="admin-charts-row">
+        <div class="admin-chart-card card full">
+          <h4>Weekly User Engagement</h4>
+          <div class="line-chart" id="engagementChart"></div>
+        </div>
+      </div>
+
+      <div class="admin-sustain card">
+        <h4>🌍 Sustainability Impact Summary</h4>
+        <div class="as-grid">
+          <div class="as-item"><span class="as-val">47,812</span><span>Meals Saved</span></div>
+          <div class="as-item"><span class="as-val">14.3 T</span><span>Food Waste Reduced</span></div>
+          <div class="as-item"><span class="as-val">19,834</span><span>Bottles Recycled</span></div>
+          <div class="as-item"><span class="as-val">3.9 T</span><span>Plastic Diverted</span></div>
+          <div class="as-item"><span class="as-val">8.2 T</span><span>CO₂ Avoided</span></div>
+          <div class="as-item"><span class="as-val">84K+</span><span>Active Users</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PITCH ───────────────────────────── -->
+    <section class="page" id="pagePitch">
+      <div class="pitch-hero">
+        <img src="assets/logo.png" alt="National Foods" class="pitch-logo" onerror="this.style.display='none'" />
+        <h2>Why National Foods Wins</h2>
+        <p class="pitch-sub">The strategic case for #NoWasteMakeTaste</p>
+      </div>
+
+      <div class="pitch-cards">
+        <div class="pitch-card">
+          <span class="pc-icon">📈</span>
+          <h4>Drives Mayo Sales</h4>
+          <p>Every AI-generated recipe integrates National Mayo — turning passive consumers into active daily users and growing repeat purchase rates.</p>
+        </div>
+        <div class="pitch-card">
+          <span class="pc-icon">📊</span>
+          <h4>First-Party Consumer Data</h4>
+          <p>Ingredient inputs, recipe preferences, and challenge participation build a rich consumer data asset with full PDPA compliance.</p>
+        </div>
+        <div class="pitch-card">
+          <span class="pc-icon">❤️</span>
+          <h4>Loyalty & Retention</h4>
+          <p>Five-tier loyalty system with rewards, badges, and streaks creates powerful switching costs and brand affinity across Gen Z and millennials.</p>
+        </div>
+        <div class="pitch-card">
+          <span class="pc-icon">🌍</span>
+          <h4>Genuine CSR Impact</h4>
+          <p>Bottle return program and food-waste reduction create measurable environmental KPIs that strengthen NFL's sustainability narrative.</p>
+        </div>
+        <div class="pitch-card">
+          <span class="pc-icon">📸</span>
+          <h4>UGC Content Engine</h4>
+          <p>Community feed and challenge mechanics generate thousands of user-created recipe posts — organic social amplification at zero media cost.</p>
+        </div>
+        <div class="pitch-card">
+          <span class="pc-icon">🏆</span>
+          <h4>Competitive Moat</h4>
+          <p>AI-powered recipe generation + loyalty + recycling in one app positions NFL as Pakistan's most innovative FMCG brand — years ahead of competition.</p>
+        </div>
+      </div>
+
+      <div class="pitch-cta card">
+        <h3>Ready to Launch?</h3>
+        <p>This prototype demonstrates the full consumer journey. The complete platform can go live in 8 weeks with the existing tech stack.</p>
+        <div class="pitch-metrics">
+          <div class="pm"><span class="pm-v">8 wks</span><span>To Launch</span></div>
+          <div class="pm"><span class="pm-v">0 backend</span><span>Required (MVP)</span></div>
+          <div class="pm"><span class="pm-v">∞</span><span>Brand Value</span></div>
+        </div>
+        <button class="btn-primary" onclick="showToast('Let\\'s make it happen! 🚀', 'success')">🚀 Let's Make It Happen</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" data-page="home" onclick="navigate('home')">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" data-page="recipe" onclick="navigate('recipe')">
+      <span class="nav-icon">🤖</span>
+      <span>AI Chef</span>
+    </button>
+    <button class="nav-btn" data-page="challenges" onclick="navigate('challenges')">
+      <span class="nav-icon">🏆</span>
+      <span>Challenges</span>
+    </button>
+    <button class="nav-btn" data-page="community" onclick="navigate('community')">
+      <span class="nav-icon">📸</span>
+      <span>Community</span>
+    </button>
+    <button class="nav-btn" data-page="wallet" onclick="navigate('wallet')">
+      <span class="nav-icon">⭐</span>
+      <span>Wallet</span>
+    </button>
+    <button class="nav-btn more-btn" onclick="toggleMoreMenu()">
+      <span class="nav-icon">☰</span>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- More Menu -->
+  <div class="more-menu" id="moreMenu" style="display:none">
+    <button onclick="navigate('recycle'); toggleMoreMenu()">♻️ Return Bottle</button>
+    <button onclick="navigate('sustain'); toggleMoreMenu()">🌍 Sustainability</button>
+    <button onclick="navigate('rewards'); toggleMoreMenu()">🎁 Rewards</button>
+    <button onclick="navigate('admin'); toggleMoreMenu()">📊 Brand Dashboard</button>
+    <button onclick="navigate('pitch'); toggleMoreMenu()">💼 Why NFL Wins</button>
+  </div>
+
+</div><!-- end #app -->
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+
+<!-- Post Modal -->
+<div class="modal-overlay" id="postModal" style="display:none" onclick="closeModal('postModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📸 Share Your Recipe</h3>
+      <button class="modal-close" onclick="closeModal('postModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-zone" onclick="simulateUpload()">
+        <span class="upload-icon" id="uploadIcon">📷</span>
+        <p id="uploadText">Tap to add photo</p>
+      </div>
+      <div class="form-group">
+        <label>Recipe Name</label>
+        <input type="text" id="postName" class="form-input" placeholder="e.g. My Amazing Mayo Wrap" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="postDesc" class="form-input" rows="3" placeholder="Tell us about your recipe…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Challenge Tag</label>
+        <select id="postChallenge" class="form-select">
+          <option value="">No challenge</option>
+          <option value="#RotiReinvention">#RotiReinvention</option>
+          <option value="#LeftoverChicken">#LeftoverChicken</option>
+          <option value="#MayoMaster">#MayoMaster</option>
+          <option value="#5MinSnack">#5MinSnack</option>
+          <option value="#RamadanLeftover">#RamadanLeftover</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('postModal')">Cancel</button>
+      <button class="btn-primary" onclick="submitPost()">Share +50 pts 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
