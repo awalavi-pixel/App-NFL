@@ -1,12 +1,13 @@
-/* ═══════════════════════════════════════════
-   #NoWasteMakeTaste — National Foods
-   App Logic
-═══════════════════════════════════════════ */
-
+/* ==========================================
+   #NoWasteMakeTaste - National Foods
+   App Logic v2.0
+   ========================================== */
 'use strict';
 
-// ── STATE ──────────────────────────────────
-const DEFAULT_STATE = {
+/* ==========================================
+   STATE
+   ========================================== */
+const DEFAULTS = {
   points: 0,
   tier: 'starter',
   recipesGenerated: 0,
@@ -19,147 +20,190 @@ const DEFAULT_STATE = {
   pointsHistory: [],
   streak: 0,
   lastVisit: null,
-  onboardingDone: false,
-  uploadedPhoto: false
+  onboardingDone: false
 };
 
-let state = {};
+let S = {};
 
 function loadState() {
   try {
-    const saved = localStorage.getItem('nflNoWasteState');
-    state = saved ? { ...DEFAULT_STATE, ...JSON.parse(saved) } : { ...DEFAULT_STATE };
+    const raw = localStorage.getItem('nfl_nowaste_v2');
+    S = raw ? Object.assign({}, DEFAULTS, JSON.parse(raw)) : Object.assign({}, DEFAULTS);
   } catch (e) {
-    state = { ...DEFAULT_STATE };
+    S = Object.assign({}, DEFAULTS);
   }
 }
 
-function saveState() {
-  localStorage.setItem('nflNoWasteState', JSON.stringify(state));
+function save() {
+  try { localStorage.setItem('nfl_nowaste_v2', JSON.stringify(S)); } catch (e) {}
 }
 
-function addPoints(pts, reason, icon = '⭐') {
-  state.points += pts;
-  state.pointsHistory.unshift({ pts, reason, icon, time: new Date().toISOString() });
-  if (state.pointsHistory.length > 50) state.pointsHistory.pop();
-  updateTier();
-  saveState();
-  updateUI();
-  animatePoints(pts);
-  if (pts > 0) showToast(`+${pts} pts — ${reason}`, 'gold');
+/* ==========================================
+   TIERS
+   ========================================== */
+const TIERS = [
+  { id: 'starter',   name: 'Starter',                icon: '🌱', min: 0,    max: 499,      color: '#9E9E9E' },
+  { id: 'explorer',  name: 'Kitchen Explorer',        icon: '🍳', min: 500,  max: 1499,     color: '#0277BD' },
+  { id: 'hero',      name: 'Taste Hero',              icon: '🦸', min: 1500, max: 2999,     color: '#6A1B9A' },
+  { id: 'champion',  name: 'Sustainability Champion', icon: '🌍', min: 3000, max: 4999,     color: '#2E7D32' },
+  { id: 'master',    name: 'NFL Master Creator',      icon: '👑', min: 5000, max: Infinity, color: '#C8960C' }
+];
+
+function currentTier() { return TIERS.find(t => t.id === S.tier) || TIERS[0]; }
+function nextTier()    { const i = TIERS.findIndex(t => t.id === S.tier); return i < TIERS.length-1 ? TIERS[i+1] : null; }
+
+function recalcTier() {
+  const pts = S.points;
+  for (let i = TIERS.length-1; i >= 0; i--) {
+    if (pts >= TIERS[i].min) {
+      if (TIERS[i].id !== S.tier) {
+        S.tier = TIERS[i].id;
+        setTimeout(() => showToast('🎉 Tier Up! You are now ' + TIERS[i].name + '!', 'gold'), 500);
+      }
+      return;
+    }
+  }
+}
+
+/* ==========================================
+   POINTS
+   ========================================== */
+function addPoints(pts, reason, icon) {
+  icon = icon || '⭐';
+  S.points += pts;
+  S.pointsHistory.unshift({ pts, reason, icon, time: new Date().toISOString() });
+  if (S.pointsHistory.length > 60) S.pointsHistory.pop();
+  recalcTier();
+  save();
+  refreshHeaderPts();
+  refreshHomeStats();
+  floatPoints(pts);
+  if (pts > 0) showToast('+' + pts + ' pts — ' + reason, 'gold');
 }
 
 function spendPoints(pts) {
-  if (state.points < pts) return false;
-  state.points -= pts;
-  saveState();
-  updateUI();
+  if (S.points < pts) return false;
+  S.points -= pts;
+  recalcTier();
+  save();
+  refreshHeaderPts();
   return true;
 }
 
-// ── TIERS ─────────────────────────────────
-const TIERS = [
-  { id: 'starter',    name: 'Starter',               icon: '🌱', min: 0,    max: 499,  color: '#757575' },
-  { id: 'explorer',   name: 'Kitchen Explorer',       icon: '🍳', min: 500,  max: 1499, color: '#0077B6' },
-  { id: 'hero',       name: 'Taste Hero',             icon: '🦸', min: 1500, max: 2999, color: '#7B1FA2' },
-  { id: 'champion',   name: 'Sustainability Champion',icon: '🌍', min: 3000, max: 4999, color: '#2E7D32' },
-  { id: 'master',     name: 'NFL Master Creator',     icon: '👑', min: 5000, max: Infinity, color: '#E65100' }
-];
+function refreshHeaderPts() {
+  const el = document.getElementById('hdrPts');
+  if (el) el.textContent = S.points.toLocaleString();
+}
 
-const TIER_COLORS = {
-  starter: '#757575', explorer: '#0077B6', hero: '#7B1FA2',
-  champion: '#2E7D32', master: '#E65100'
-};
+function refreshHomeStats() {
+  setText('qsPoints', S.points.toLocaleString());
+  setText('qsMeals', S.mealsSaved);
+  setText('qsStreak', S.streak);
+  const t = currentTier();
+  setText('heroBadgeIcon', t.icon);
+  setText('heroBadgeTier', t.name);
+  setText('hbTierIcon', t.icon);
+  setText('hbTierName', t.name);
+}
 
-function updateTier() {
-  const pts = state.points;
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (pts >= TIERS[i].min) {
-      const newTier = TIERS[i].id;
-      if (newTier !== state.tier) {
-        state.tier = newTier;
-        showToast(`🎉 Tier Up! You're now a ${TIERS[i].name}!`, 'gold');
-      }
-      break;
-    }
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+/* ==========================================
+   STREAK
+   ========================================== */
+function checkStreak() {
+  const today = new Date().toDateString();
+  if (S.lastVisit === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  S.streak = (S.lastVisit === yesterday) ? S.streak + 1 : 1;
+  S.lastVisit = today;
+  if (S.streak > 1) {
+    setTimeout(() => showToast('🔥 ' + S.streak + '-day streak! Keep cooking!', 'success'), 2000);
+    if (S.streak % 7 === 0) addPoints(100, S.streak + '-day streak bonus!', '🔥');
   }
+  save();
+  refreshHomeStats();
 }
 
-function getTierData(tierId) {
-  return TIERS.find(t => t.id === tierId) || TIERS[0];
-}
-
-function getCurrentTier() { return getTierData(state.tier); }
-
-function getNextTier() {
-  const idx = TIERS.findIndex(t => t.id === state.tier);
-  return idx < TIERS.length - 1 ? TIERS[idx + 1] : null;
-}
-
-// ── SPLASH ────────────────────────────────
+/* ==========================================
+   SPLASH
+   ========================================== */
 function runSplash() {
-  const fill = document.getElementById('loaderFill');
-  const text = document.getElementById('loaderText');
-  const msgs = ['Loading your kitchen…', 'Preparing AI chef…', 'Warming up recipes…', 'Ready!'];
-  let pct = 0;
-  let mi = 0;
+  const fill = document.getElementById('spFill');
+  const txt  = document.getElementById('spText');
+  const msgs = ['Preparing your kitchen…', 'Loading AI chef…', 'Almost ready…', 'Welcome! 🎉'];
+  let pct = 0, mi = 0;
 
   const iv = setInterval(() => {
-    pct += Math.random() * 15 + 5;
+    pct += Math.random() * 12 + 4;
     if (pct >= 100) { pct = 100; clearInterval(iv); }
-    fill.style.width = pct + '%';
-    if (pct > 30 && mi < 1) { text.textContent = msgs[1]; mi = 1; }
-    if (pct > 60 && mi < 2) { text.textContent = msgs[2]; mi = 2; }
-    if (pct > 90 && mi < 3) { text.textContent = msgs[3]; mi = 3; }
-    if (pct >= 100) {
-      setTimeout(() => {
-        if (state.onboardingDone) { showApp(); } else { showScreen('onboarding'); }
-      }, 400);
-    }
-  }, 120);
+    if (fill) fill.style.width = pct + '%';
+    if (pct > 25 && mi < 1) { mi = 1; if (txt) txt.textContent = msgs[1]; }
+    if (pct > 55 && mi < 2) { mi = 2; if (txt) txt.textContent = msgs[2]; }
+    if (pct > 85 && mi < 3) { mi = 3; if (txt) txt.textContent = msgs[3]; }
+    if (pct >= 100) setTimeout(afterSplash, 500);
+  }, 100);
 }
 
-// ── ONBOARDING ────────────────────────────
+function afterSplash() {
+  if (S.onboardingDone) showApp();
+  else showScreen('onboarding');
+}
+
+/* ==========================================
+   ONBOARDING
+   ========================================== */
 let obIdx = 0;
 
-document.getElementById('obNext').addEventListener('click', () => {
-  if (obIdx < 2) {
-    obIdx++;
-    document.querySelectorAll('.ob-slide').forEach((s, i) => s.classList.toggle('active', i === obIdx));
-    document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('active', i === obIdx));
-    if (obIdx === 2) document.getElementById('obNext').textContent = 'Get Started 🚀';
-  } else {
-    finishOnboarding();
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  const next = document.getElementById('obNext');
+  const skip = document.getElementById('obSkip');
+  if (next) next.addEventListener('click', () => {
+    if (obIdx < 2) {
+      obIdx++;
+      switchObSlide(obIdx);
+      if (obIdx === 2) next.innerHTML = 'Get Started &#128640;';
+    } else {
+      finishOnboarding();
+    }
+  });
+  if (skip) skip.addEventListener('click', finishOnboarding);
+
+  loadState();
+  checkStreak();
+  setTimeout(runSplash, 200);
 });
 
-document.getElementById('obSkip').addEventListener('click', finishOnboarding);
+function switchObSlide(idx) {
+  document.querySelectorAll('.ob-slide').forEach((s, i) => {
+    s.style.display = i === idx ? 'block' : 'none';
+    if (i === idx) s.style.animation = 'none', s.offsetHeight, s.style.animation = '';
+  });
+  document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
 
 function finishOnboarding() {
-  state.onboardingDone = true;
-  saveState();
+  S.onboardingDone = true;
+  save();
   showApp();
 }
 
-// ── SCREEN MANAGEMENT ─────────────────────
+/* ==========================================
+   SCREEN / NAV
+   ========================================== */
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.removeProperty('display');
+  });
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
 }
 
-function showApp() {
-  showScreen('app');
-  updateUI();
-  initChallenges();
-  initCommunity();
-  initRewards();
-  initAdminCharts();
-  checkStreak();
-  navigate('home');
-}
-
-// ── NAVIGATION ────────────────────────────
-const PAGE_IDS = {
+const PAGE_MAP = {
   home: 'pageHome', recipe: 'pageRecipe', challenges: 'pageChallenges',
   community: 'pageCommunity', wallet: 'pageWallet', recycle: 'pageRecycle',
   sustain: 'pageSustain', rewards: 'pageRewards', admin: 'pageAdmin', pitch: 'pagePitch'
@@ -168,501 +212,324 @@ const PAGE_IDS = {
 let currentPage = 'home';
 
 function navigate(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const pageId = PAGE_IDS[page];
-  if (pageId) document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.page').forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
+  const pid = PAGE_MAP[page];
+  if (!pid) return;
+  const el = document.getElementById(pid);
+  if (el) { el.style.display = 'block'; el.classList.add('active'); }
   currentPage = page;
 
-  // Update nav
-  document.querySelectorAll('.nav-btn[data-page]').forEach(b => {
-    b.classList.toggle('active', b.dataset.page === page);
-  });
+  document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === page));
 
-  // Close more menu
-  document.getElementById('moreMenu').style.display = 'none';
+  const pc = document.getElementById('pageContainer');
+  if (pc) pc.scrollTo(0, 0);
 
-  // Scroll to top
-  document.getElementById('pageContainer').scrollTo(0, 0);
+  const mm = document.getElementById('moreMenu');
+  if (mm) mm.style.display = 'none';
 
-  // Page-specific refreshes
-  if (page === 'wallet') renderWallet();
-  if (page === 'sustain') renderSustain();
-  if (page === 'recycle') renderRecycleStats();
-  if (page === 'rewards') renderRewards();
+  if (page === 'wallet')     renderWallet();
+  if (page === 'sustain')    renderSustain();
+  if (page === 'recycle')    renderRecycleStats();
+  if (page === 'rewards')    renderRewards();
+  if (page === 'challenges') initChallenges();
 }
 
-function toggleMoreMenu() {
-  const m = document.getElementById('moreMenu');
-  m.style.display = m.style.display === 'none' ? 'flex' : 'none';
-  if (m.style.display === 'flex') {
-    setTimeout(() => {
-      document.addEventListener('click', closeMoreOnOutside, { once: true });
-    }, 100);
+function toggleMore() {
+  const mm = document.getElementById('moreMenu');
+  if (!mm) return;
+  const isOpen = mm.style.display === 'flex';
+  mm.style.display = isOpen ? 'none' : 'flex';
+  mm.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    setTimeout(() => document.addEventListener('click', closeMoreOut, { once: true }), 100);
   }
 }
 
-function closeMoreOnOutside(e) {
-  const m = document.getElementById('moreMenu');
-  if (!m.contains(e.target)) m.style.display = 'none';
+function closeMoreOut(e) {
+  const mm = document.getElementById('moreMenu');
+  if (mm && !mm.contains(e.target)) { mm.style.display = 'none'; mm.classList.remove('open'); }
 }
 
-// ── UI UPDATE ─────────────────────────────
-function updateUI() {
-  const t = getCurrentTier();
-  // Header
-  document.getElementById('hdrPts').textContent = state.points.toLocaleString();
-  // Home
-  document.getElementById('heroName').textContent = 'Chef';
-  document.getElementById('heroBadgeIcon').textContent = t.icon;
-  document.getElementById('heroBadgeTier').textContent = t.name;
-  document.getElementById('qsPoints').textContent = state.points.toLocaleString();
-  document.getElementById('qsMeals').textContent = state.mealsSaved;
-  document.getElementById('qsBottles').textContent = state.bottlesReturned;
-  document.getElementById('qsStreak').textContent = state.streak;
+function showApp() {
+  showScreen('app');
+  refreshHeaderPts();
+  refreshHomeStats();
+  initChallenges();
+  initCommunity();
+  initRewards();
+  initAdminCharts();
+  document.getElementById('notifBtn').addEventListener('click', () => showToast('No new notifications', ''));
 }
 
-// ── STREAK ────────────────────────────────
-function checkStreak() {
-  const today = new Date().toDateString();
-  const last = state.lastVisit;
-  if (last === today) return;
-  const yesterday = new Date(Date.now() - 86400000).toDateString();
-  if (last === yesterday) { state.streak++; } else if (last !== today) { state.streak = 1; }
-  state.lastVisit = today;
-  if (state.streak > 1) {
-    setTimeout(() => showToast(`🔥 ${state.streak}-day streak! Keep cooking!`, 'success'), 1500);
-    if (state.streak % 7 === 0) addPoints(100, `${state.streak}-day streak bonus!`, '🔥');
-  }
-  saveState();
-  updateUI();
-}
-
-// ── INGREDIENTS ───────────────────────────
+/* ==========================================
+   INGREDIENTS
+   ========================================== */
 let ingredients = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('ingredientInput');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addIngredient(); } });
+});
 
 function addIngredient() {
   const inp = document.getElementById('ingredientInput');
-  const val = inp.value.trim();
-  if (!val) return;
-  const items = val.split(',').map(s => s.trim()).filter(Boolean);
-  items.forEach(item => {
-    if (!ingredients.includes(item.toLowerCase())) {
-      ingredients.push(item.toLowerCase());
-    }
+  if (!inp) return;
+  const raw = inp.value.trim();
+  if (!raw) return;
+  raw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean).forEach(item => {
+    if (!ingredients.includes(item)) ingredients.push(item);
   });
   inp.value = '';
-  renderIngredientTags();
+  renderTags();
 }
 
-document.getElementById('ingredientInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addIngredient();
-});
+function quickAdd(item) {
+  if (!ingredients.includes(item)) ingredients.push(item);
+  renderTags();
+}
 
 function removeIngredient(i) {
   ingredients.splice(i, 1);
-  renderIngredientTags();
+  renderTags();
 }
 
-function renderIngredientTags() {
+function renderTags() {
   const c = document.getElementById('ingredientTags');
+  if (!c) return;
   c.innerHTML = ingredients.map((ing, i) =>
-    `<span class="ingr-tag">${ing} <button onclick="removeIngredient(${i})">✕</button></span>`
+    '<span class="ingr-tag">' + ing + ' <button onclick="removeIngredient(' + i + ')">&#10005;</button></span>'
   ).join('');
 }
 
-// ── AI RECIPE ENGINE ──────────────────────
+/* ==========================================
+   AI RECIPE ENGINE
+   ========================================== */
 const RECIPE_DB = [
-  {
-    keywords: ['chicken', 'murgh', 'poultry'],
+  { keys: ['chicken','murgh','poultry','gosht'],
     recipes: [
-      {
-        name: 'Creamy Mayo Chicken Wrap',
-        emoji: '🥙',
-        time: 10, diff: 'Easy', servings: 2,
-        waste: '0.4 kg',
-        ingredients: ['Leftover chicken (shredded)', '2 roti/tortillas', '3 tbsp National Mayo', 'Lettuce leaves', 'Tomato slices', 'Salt & pepper', 'National Chilli Garlic Sauce (optional)'],
-        steps: ['Shred the leftover chicken into bite-sized pieces.', 'Mix chicken with 2 tbsp National Mayo, salt, and pepper in a bowl.', 'Spread remaining mayo on each roti.', 'Layer lettuce, tomato, and the mayo chicken mixture.', 'Roll tightly, slice diagonally, and serve immediately.'],
-        product: 'National Mayo + National Chilli Garlic Sauce',
-        pts: 35
-      },
-      {
-        name: 'Spicy Mayo Chicken Bowl',
-        emoji: '🍚',
-        time: 15, diff: 'Easy', servings: 2,
-        waste: '0.5 kg',
-        ingredients: ['Leftover chicken', '1 cup cooked rice', '3 tbsp National Mayo', '1 tsp National Chilli Sauce', 'Spring onions', 'Sesame seeds', 'Soy sauce'],
-        steps: ['Warm leftover chicken in a pan with a splash of water.', 'Whisk National Mayo with chilli sauce and soy sauce.', 'Place rice in a bowl, top with chicken.', 'Drizzle the spicy mayo sauce generously.', 'Garnish with spring onions and sesame seeds.'],
-        product: 'National Mayo + National Chilli Sauce',
-        pts: 40
-      }
+      { name: 'Creamy Mayo Chicken Wrap', emoji: '🥙', time: 10, diff: 'Easy', servings: 2, waste: '0.4 kg', pts: 35,
+        ingredients: ['Leftover chicken, shredded', '2 rotis or tortillas', '3 tbsp National Mayo', 'Lettuce leaves', 'Tomato slices', 'Salt & black pepper', 'National Chilli Garlic Sauce'],
+        steps: ['Shred leftover chicken into bite-sized pieces.','Mix chicken with 2 tbsp National Mayo, season with salt and pepper.','Spread remaining mayo across each roti.','Layer lettuce, tomato, then the mayo chicken on top.','Roll tightly, slice on the diagonal, serve immediately.'],
+        product: 'National Mayo + National Chilli Garlic Sauce' },
+      { name: 'Spicy Chicken Mayo Bowl', emoji: '🍚', time: 15, diff: 'Easy', servings: 2, waste: '0.5 kg', pts: 40,
+        ingredients: ['Leftover chicken pieces', '1 cup steamed rice', '3 tbsp National Mayo', '1 tsp National Chilli Sauce', 'Spring onions, sliced', 'Sesame seeds', 'Light soy sauce'],
+        steps: ['Heat chicken in a pan with a splash of water until warmed through.','Whisk National Mayo with chilli sauce and soy sauce.','Serve rice in a bowl, arrange chicken on top.','Drizzle the spicy mayo sauce generously.','Finish with spring onions and sesame seeds.'],
+        product: 'National Mayo + National Chilli Sauce' }
     ]
   },
-  {
-    keywords: ['bread', 'toast', 'sandwich', 'roti'],
+  { keys: ['bread','toast','sandwich','bun','pao'],
     recipes: [
-      {
-        name: 'Pakistani Mayo Loaded Toast',
-        emoji: '🍞',
-        time: 8, diff: 'Easy', servings: 1,
-        waste: '0.2 kg',
-        ingredients: ['2 bread slices (leftover)', '2 tbsp National Mayo', 'Boiled egg (sliced)', 'Tomato slices', 'National Ketchup', 'Salt & chaat masala'],
-        steps: ['Toast the bread slices until golden.', 'Spread National Mayo generously on each slice.', 'Layer sliced boiled egg and tomato.', 'Drizzle National Ketchup on top.', 'Sprinkle chaat masala and serve hot!'],
-        product: 'National Mayo + National Ketchup',
-        pts: 25
-      },
-      {
-        name: 'Roti Roll-Up with Creamy Mayo',
-        emoji: '🌮',
-        time: 5, diff: 'Easy', servings: 1,
-        waste: '0.2 kg',
-        ingredients: ['1 leftover roti', '2 tbsp National Mayo', 'Any leftover sabzi or filling', 'Chaat masala', 'Fresh coriander'],
-        steps: ['Warm the roti briefly on a tawa.', 'Spread National Mayo across the surface.', 'Add leftover filling down the centre.', 'Sprinkle chaat masala and coriander.', 'Roll tightly and enjoy as a quick snack!'],
-        product: 'National Mayo',
-        pts: 20
-      }
+      { name: 'Loaded Mayo Egg Toast', emoji: '🍞', time: 8, diff: 'Easy', servings: 1, waste: '0.2 kg', pts: 25,
+        ingredients: ['2 bread slices (leftover)', '2 tbsp National Mayo', '1 boiled egg, sliced', 'Tomato slices', 'National Ketchup', 'Salt & chaat masala', 'Fresh coriander'],
+        steps: ['Toast the bread until golden and crispy.','Spread National Mayo generously on each slice.','Layer boiled egg slices and tomato.','Drizzle National Ketchup over the top.','Sprinkle chaat masala and fresh coriander to serve.'],
+        product: 'National Mayo + National Ketchup' }
     ]
   },
-  {
-    keywords: ['rice', 'chawal', 'biryani', 'pulao'],
+  { keys: ['roti','chapati','paratha'],
     recipes: [
-      {
-        name: 'Mayo Fried Rice Delight',
-        emoji: '🍳',
-        time: 15, diff: 'Medium', servings: 2,
-        waste: '0.5 kg',
-        ingredients: ['2 cups leftover rice', '2 tbsp National Mayo', '2 eggs', 'Mixed vegetables', 'Soy sauce', 'Spring onions', 'Garlic'],
-        steps: ['Heat oil in a wok over high heat.', 'Scramble eggs and set aside.', 'Stir-fry garlic and vegetables until tender.', 'Add leftover rice and mix well.', 'Stir in National Mayo and soy sauce.', 'Add eggs back in, garnish with spring onions.'],
-        product: 'National Mayo',
-        pts: 30
-      }
+      { name: 'Mayo Roti Roll-Up', emoji: '🌮', time: 5, diff: 'Super Easy', servings: 1, waste: '0.2 kg', pts: 20,
+        ingredients: ['1 leftover roti or paratha', '2 tbsp National Mayo', 'Any leftover sabzi or filling', 'Chaat masala', 'Fresh coriander', 'Green chilli, sliced'],
+        steps: ['Warm the roti briefly on a tawa over low heat.','Spread National Mayo across the entire surface.','Add your leftover sabzi or filling down the centre.','Sprinkle chaat masala, coriander, and green chilli.','Roll firmly and enjoy as a quick snack or meal.'],
+        product: 'National Mayo' }
     ]
   },
-  {
-    keywords: ['fries', 'chips', 'potato', 'aloo'],
+  { keys: ['rice','chawal','biryani','pulao','fried rice'],
     recipes: [
-      {
-        name: 'Spicy Mayo Loaded Fries',
-        emoji: '🍟',
-        time: 10, diff: 'Easy', servings: 2,
-        waste: '0.3 kg',
-        ingredients: ['Leftover fries/chips', '3 tbsp National Mayo', '1 tbsp National Chilli Sauce', 'Grated cheese', 'Jalapeños', 'Spring onions'],
-        steps: ['Reheat fries in oven at 180°C for 5 mins until crispy.', 'Mix National Mayo with chilli sauce for the spicy drizzle.', 'Spread fries on a plate, add cheese.', 'Drizzle spicy mayo generously over top.', 'Top with jalapeños and spring onions. Serve immediately!'],
-        product: 'National Mayo + National Chilli Sauce',
-        pts: 25
-      }
+      { name: 'Mayo Fried Rice', emoji: '🍳', time: 15, diff: 'Medium', servings: 2, waste: '0.5 kg', pts: 30,
+        ingredients: ['2 cups leftover rice', '2 tbsp National Mayo', '2 eggs', 'Mixed vegetables (carrot, peas, corn)', 'Soy sauce', 'Spring onions', '2 garlic cloves, minced'],
+        steps: ['Heat oil in a wok on high heat until smoking.','Scramble the eggs, remove and set aside.','Stir-fry garlic and vegetables for 2 minutes.','Add cold leftover rice, break up any clumps.','Stir in National Mayo and soy sauce until evenly coated.','Mix in scrambled eggs, garnish with spring onions.'],
+        product: 'National Mayo' }
     ]
   },
-  {
-    keywords: ['egg', 'anda', 'eggs'],
+  { keys: ['fries','chips','potato','aloo','crispy'],
     recipes: [
-      {
-        name: 'Classic Mayo Egg Salad Sandwich',
-        emoji: '🥚',
-        time: 10, diff: 'Easy', servings: 2,
-        waste: '0.2 kg',
-        ingredients: ['3 boiled eggs', '3 tbsp National Mayo', 'Bread slices', 'Mustard (optional)', 'Salt & pepper', 'Fresh parsley', 'Paprika'],
-        steps: ['Chop boiled eggs into small pieces.', 'Mix with National Mayo, salt, pepper, and mustard.', 'Spread generously on bread slices.', 'Sprinkle paprika and fresh parsley on top.', 'Serve open-faced or as a sandwich.'],
-        product: 'National Mayo',
-        pts: 25
-      }
+      { name: 'Spicy Mayo Loaded Fries', emoji: '🍟', time: 10, diff: 'Easy', servings: 2, waste: '0.3 kg', pts: 25,
+        ingredients: ['Leftover fries or chips', '3 tbsp National Mayo', '1 tbsp National Chilli Sauce', 'Grated cheese (optional)', 'Jalapeños', 'Spring onions, chopped', 'Paprika to taste'],
+        steps: ['Crisp up leftover fries in oven at 200°C for 6 minutes.','Whisk National Mayo with chilli sauce and paprika.','Spread fries on a serving plate, add cheese if using.','Drizzle spicy mayo generously across the top.','Top with jalapeños and spring onions. Serve hot!'],
+        product: 'National Mayo + National Chilli Sauce' }
     ]
   },
-  {
-    keywords: ['vegetable', 'sabzi', 'veggie', 'greens', 'salad'],
+  { keys: ['egg','anda','eggs','boiled egg','omelette'],
     recipes: [
-      {
-        name: 'Creamy Veggie Mayo Toast',
-        emoji: '🥗',
-        time: 8, diff: 'Easy', servings: 2,
-        waste: '0.4 kg',
-        ingredients: ['Any leftover cooked vegetables', '4 bread slices', '3 tbsp National Mayo', 'Cheese slice', 'Mixed herbs', 'National Ketchup'],
-        steps: ['Mash or chop leftover vegetables into small pieces.', 'Mix well with 2 tbsp National Mayo and mixed herbs.', 'Toast bread slices until golden.', 'Spread veggie mayo mixture on toast.', 'Top with cheese slice and broil for 2 mins.', 'Drizzle National Ketchup and serve!'],
-        product: 'National Mayo + National Ketchup',
-        pts: 30
-      }
+      { name: 'Classic Mayo Egg Salad', emoji: '🥚', time: 8, diff: 'Easy', servings: 2, waste: '0.2 kg', pts: 22,
+        ingredients: ['3 boiled eggs', '3 tbsp National Mayo', '4 bread slices or crackers', 'Dijon mustard (optional)', 'Salt & white pepper', 'Paprika', 'Fresh parsley or coriander'],
+        steps: ['Chop boiled eggs into small pieces in a bowl.','Mix thoroughly with National Mayo and mustard.','Season with salt, white pepper, and a pinch of paprika.','Spread generously on toast or serve with crackers.','Garnish with fresh herbs and a final sprinkle of paprika.'],
+        product: 'National Mayo' }
     ]
   },
-  {
-    keywords: ['pasta', 'noodles', 'spaghetti', 'macaroni'],
+  { keys: ['vegetables','sabzi','veggie','greens','salad','mix veg','leftover veg'],
     recipes: [
-      {
-        name: 'Pakistani Mayo Pasta Salad',
-        emoji: '🍝',
-        time: 12, diff: 'Easy', servings: 2,
-        waste: '0.4 kg',
-        ingredients: ['1 cup leftover pasta', '3 tbsp National Mayo', 'Sweet corn', 'Capsicum (diced)', 'Black olives', 'Salt & pepper', 'Mixed herbs'],
-        steps: ['If cold, briefly warm the pasta with a splash of water.', 'In a large bowl, combine pasta with all vegetables.', 'Add National Mayo and mix thoroughly.', 'Season with salt, pepper, and mixed herbs.', 'Chill for 10 minutes or serve immediately.'],
-        product: 'National Mayo',
-        pts: 28
-      }
+      { name: 'Creamy Veggie Mayo Toast', emoji: '🥗', time: 8, diff: 'Easy', servings: 2, waste: '0.4 kg', pts: 28,
+        ingredients: ['Any leftover cooked vegetables', '4 bread slices', '3 tbsp National Mayo', 'Cheese slices (optional)', 'Mixed herbs (oregano, basil)', 'National Ketchup'],
+        steps: ['Roughly chop or mash leftover vegetables.','Mix with 2 tbsp National Mayo and mixed herbs.','Toast bread until golden.','Spread veggie mayo mixture generously on each slice.','Add cheese and broil for 2 minutes if desired.','Drizzle National Ketchup and serve warm.'],
+        product: 'National Mayo + National Ketchup' }
+    ]
+  },
+  { keys: ['pasta','noodles','spaghetti','macaroni','penne'],
+    recipes: [
+      { name: 'Cold Mayo Pasta Salad', emoji: '🍝', time: 10, diff: 'Easy', servings: 2, waste: '0.4 kg', pts: 28,
+        ingredients: ['1 cup leftover pasta', '3 tbsp National Mayo', 'Sweet corn kernels', 'Capsicum, diced', 'Black olives, sliced', 'Salt & black pepper', 'Mixed Italian herbs'],
+        steps: ['If pasta is cold from fridge, let it come to room temperature.','Combine pasta with corn, capsicum, and olives in a bowl.','Add National Mayo and fold through gently.','Season with salt, pepper, and herbs to taste.','Refrigerate 10 minutes for best flavour, or serve immediately.'],
+        product: 'National Mayo' }
     ]
   }
 ];
 
-const GENERIC_RECIPES = [
-  {
-    name: 'Mayo Magic Snack Platter',
-    emoji: '🍽️',
-    time: 10, diff: 'Easy', servings: 2,
-    waste: '0.3 kg',
-    ingredients: ['Any leftover ingredients you have', '3 tbsp National Mayo', 'Crackers or bread', 'Pickles', 'Any available vegetables', 'Salt & spices to taste'],
-    steps: ['Arrange all leftovers on a large plate.', 'Mix National Mayo with your preferred spices.', 'Use mayo as a dipping sauce or spread.', 'Combine flavours creatively.', 'Enjoy your zero-waste snack platter!'],
-    product: 'National Mayo',
-    pts: 20
-  },
-  {
-    name: 'Quick Mayo Quesadilla',
-    emoji: '🫓',
-    time: 12, diff: 'Easy', servings: 1,
-    waste: '0.25 kg',
+const FALLBACK_RECIPES = [
+  { name: 'Zero Waste Mayo Platter', emoji: '🍽️', time: 8, diff: 'Easy', servings: 2, waste: '0.3 kg', pts: 18,
+    ingredients: ['Any available leftovers', '3 tbsp National Mayo', 'Crackers or bread', 'Pickles or olives', 'Any available vegetables', 'Salt & spices to taste'],
+    steps: ['Arrange all your leftovers on a large plate.','Whisk National Mayo with your preferred spices for a dip.','Use mayo as both a dipping sauce and a spread.','Combine flavours creatively and enjoy!','Zero food wasted — champion move!'],
+    product: 'National Mayo' },
+  { name: 'Quick Mayo Quesadilla', emoji: '🫓', time: 10, diff: 'Easy', servings: 1, waste: '0.25 kg', pts: 22,
     ingredients: ['2 rotis or tortillas', '2 tbsp National Mayo', 'Any leftover filling', 'Cheese (optional)', 'National Ketchup for dipping'],
-    steps: ['Spread National Mayo on one roti.', 'Add leftover filling and cheese on top.', 'Cover with second roti.', 'Cook on tawa over medium heat, 3 mins per side.', 'Slice into quarters and serve with National Ketchup.'],
-    product: 'National Mayo + National Ketchup',
-    pts: 25
-  }
+    steps: ['Spread National Mayo on one roti.','Add leftover filling and cheese on top.','Cover with second roti, press firmly.','Cook on tawa 3 minutes per side until golden.','Slice into quarters, serve with National Ketchup.'],
+    product: 'National Mayo + National Ketchup' }
 ];
 
-function getRecipeForIngredients(ingrs, mealType, spice, cookTime, diet) {
-  let matched = null;
+function matchRecipe(ingrs) {
   for (const group of RECIPE_DB) {
-    if (ingrs.some(i => group.keywords.some(k => i.includes(k)))) {
-      const arr = group.recipes;
-      matched = arr[Math.floor(Math.random() * arr.length)];
-      break;
+    if (ingrs.some(i => group.keys.some(k => i.includes(k) || k.includes(i)))) {
+      return group.recipes[Math.floor(Math.random() * group.recipes.length)];
     }
   }
-  if (!matched) matched = GENERIC_RECIPES[Math.floor(Math.random() * GENERIC_RECIPES.length)];
-
-  // Personalise based on inputs
-  const pts = matched.pts + (spice === 'hot' ? 5 : spice === 'extra-hot' ? 10 : 0);
-  const rec = JSON.parse(JSON.stringify(matched));
-  rec.pts = pts;
-
-  // Adjust time label
-  if (parseInt(cookTime) < rec.time) rec.time = parseInt(cookTime) + 2;
-
-  return rec;
+  return FALLBACK_RECIPES[Math.floor(Math.random() * FALLBACK_RECIPES.length)];
 }
 
 function generateRecipe() {
-  if (ingredients.length === 0) {
-    showToast('Please add at least one ingredient!', 'error');
-    return;
-  }
+  if (ingredients.length === 0) { showToast('Please add at least one ingredient!', 'error'); return; }
 
+  const btn = document.getElementById('generateBtn');
+  if (btn) btn.disabled = true;
   document.getElementById('recipeResult').style.display = 'none';
   document.getElementById('aiThinking').style.display = 'block';
-  document.getElementById('generateBtn').disabled = true;
 
-  const mealType = document.getElementById('mealType').value;
   const spice = document.getElementById('spiceLevel').value;
-  const cookTime = document.getElementById('cookTime').value;
-  const diet = document.getElementById('dietPref').value;
+  const aiMsgs = ['Analysing your ingredients...', 'Cross-referencing 1,200+ recipes...', 'Matching National Mayo pairings...', 'Perfecting your zero-waste meal...'];
+  let mi = 0;
+  const msgEl = document.querySelector('.ai-msg');
+  const msgIv = setInterval(() => {
+    if (msgEl && mi < aiMsgs.length) {
+      msgEl.style.opacity = 0;
+      setTimeout(() => { if (msgEl) { msgEl.textContent = aiMsgs[mi]; msgEl.style.opacity = 1; } }, 200);
+      mi++;
+    }
+  }, 600);
 
   setTimeout(() => {
+    clearInterval(msgIv);
     document.getElementById('aiThinking').style.display = 'none';
-    document.getElementById('generateBtn').disabled = false;
+    if (btn) btn.disabled = false;
 
-    const recipe = getRecipeForIngredients(ingredients, mealType, spice, cookTime, diet);
+    const r = JSON.parse(JSON.stringify(matchRecipe(ingredients)));
+    if (spice === 'hot') r.pts += 5;
+    if (spice === 'extra-hot') r.pts += 12;
 
-    document.getElementById('rrEmoji').textContent = recipe.emoji;
-    document.getElementById('rrName').textContent = recipe.name;
-    document.getElementById('rrTime').textContent = `⏱️ ${recipe.time} min`;
-    document.getElementById('rrDiff').textContent = `👨‍🍳 ${recipe.diff}`;
-    document.getElementById('rrServings').textContent = `👥 ${recipe.servings} servings`;
-    document.getElementById('rrWaste').textContent = recipe.waste;
-    document.getElementById('rrPts').textContent = recipe.pts;
-    document.getElementById('rrProduct').textContent = recipe.product;
+    document.getElementById('rrEmoji').textContent = r.emoji;
+    document.getElementById('rrName').textContent = r.name;
+    document.getElementById('rrTime').textContent = '⏱ ' + r.time + ' min';
+    document.getElementById('rrDiff').textContent = r.diff;
+    document.getElementById('rrServings').textContent = r.servings + ' servings';
+    document.getElementById('rrWaste').textContent = r.waste;
+    document.getElementById('rrPts').textContent = r.pts;
+    document.getElementById('rrTimeVal').textContent = r.time + ' min';
+    document.getElementById('rrProduct').textContent = r.product;
 
-    const ingList = document.getElementById('rrIngredients');
-    ingList.innerHTML = recipe.ingredients.map(i => `<li>${i}</li>`).join('');
-
-    const stepList = document.getElementById('rrSteps');
-    stepList.innerHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+    document.getElementById('rrIngredients').innerHTML = r.ingredients.map(i => '<li>' + i + '</li>').join('');
+    document.getElementById('rrSteps').innerHTML = r.steps.map(s => '<li>' + s + '</li>').join('');
 
     document.getElementById('recipeResult').style.display = 'block';
     document.getElementById('recipeResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Auto-earn points
-    addPoints(recipe.pts, 'AI Recipe Generated', '🤖');
-    state.recipesGenerated++;
-    state.mealsSaved++;
-    saveState();
-    updateUI();
-  }, 2200);
+    addPoints(r.pts, 'AI Recipe Generated', '🤖');
+    S.recipesGenerated++;
+    S.mealsSaved++;
+    save();
+    refreshHomeStats();
+    renderSustainIfOpen();
+  }, 2800);
 }
 
-window._lastRecipe = null;
+function saveRecipe() { showToast('Recipe saved! 📚', 'success'); }
+function shareRecipe() { openPostModal(); }
 
-function saveRecipe() {
-  showToast('Recipe saved to your collection! 📚', 'success');
-}
-
-function shareRecipe() {
-  openPostModal();
-}
-
-// ── CHALLENGES ────────────────────────────
-const CHALLENGES_DATA = [
-  {
-    id: 'roti-reinvention',
-    emoji: '🫓',
-    title: 'Roti Reinvention Challenge',
-    desc: 'Transform leftover roti into something extraordinary using National Mayo. Most creative entry wins!',
-    pts: 150,
-    participants: 3240,
-    deadline: '3 days',
-    tag: '#RotiReinvention',
-    color: '#FF7043'
-  },
-  {
-    id: 'leftover-chicken',
-    emoji: '🍗',
-    title: 'Leftover Chicken Challenge',
-    desc: 'Show us the tastiest way to reinvent yesterday\'s chicken using National Mayo products.',
-    pts: 200,
-    participants: 5810,
-    deadline: '5 days',
-    tag: '#LeftoverChicken',
-    color: '#D32F2F'
-  },
-  {
-    id: 'mayo-master',
-    emoji: '🏅',
-    title: 'Mayo Master Challenge',
-    desc: 'Create the most creative recipe using only 5 ingredients with National Mayo as the star.',
-    pts: 200,
-    participants: 1247,
-    deadline: '2 days',
-    tag: '#MayoMaster',
-    color: '#F9A825'
-  },
-  {
-    id: '5-min-snack',
-    emoji: '⚡',
-    title: '5-Minute Snack Challenge',
-    desc: 'Under 5 minutes, using leftovers and National Mayo — make something delicious and post it!',
-    pts: 100,
-    participants: 7650,
-    deadline: '7 days',
-    tag: '#5MinSnack',
-    color: '#7B1FA2'
-  },
-  {
-    id: 'ramadan-leftover',
-    emoji: '🌙',
-    title: 'Ramadan Leftover Challenge',
-    desc: 'Give iftar leftovers new life at sehri time! Use National Mayo to create next-morning magic.',
-    pts: 175,
-    participants: 9230,
-    deadline: '4 days',
-    tag: '#RamadanLeftover',
-    color: '#1A237E'
-  }
+/* ==========================================
+   CHALLENGES
+   ========================================== */
+const CHALLENGES = [
+  { id: 'roti',    emoji: '🫓', title: 'Roti Reinvention Challenge', desc: 'Transform leftover roti into something extraordinary with National Mayo. Most creative entry wins!', pts: 150, participants: 3240, deadline: '3 days', tag: '#RotiReinvention' },
+  { id: 'chicken', emoji: '🍗', title: 'Leftover Chicken Challenge', desc: 'Show us the tastiest way to reinvent yesterday\'s chicken using National Mayo products.', pts: 200, participants: 5810, deadline: '5 days', tag: '#LeftoverChicken' },
+  { id: 'mayo',    emoji: '🏅', title: 'Mayo Master Challenge', desc: 'Create the most creative recipe using only 5 ingredients with National Mayo as the star.', pts: 200, participants: 1247, deadline: '2 days', tag: '#MayoMaster' },
+  { id: 'snack',   emoji: '⚡', title: '5-Minute Snack Challenge', desc: 'Under 5 minutes, with leftovers and National Mayo — make something amazing and post it!', pts: 100, participants: 7650, deadline: '7 days', tag: '#5MinSnack' },
+  { id: 'ramadan', emoji: '🌙', title: 'Ramadan Leftover Challenge', desc: 'Give iftar leftovers new life at sehri time! National Mayo magic for next-morning meals.', pts: 175, participants: 9230, deadline: '4 days', tag: '#RamadanLeftover' }
 ];
 
 function initChallenges() {
-  const joined = state.challengesJoined || [];
   const list = document.getElementById('challengesList');
-  list.innerHTML = CHALLENGES_DATA.map(ch => {
+  if (!list) return;
+  const joined = S.challengesJoined || [];
+
+  list.innerHTML = CHALLENGES.map(ch => {
     const isJoined = joined.includes(ch.id);
-    return `
-      <div class="challenge-card ${isJoined ? 'joined' : ''}" id="cc-${ch.id}">
-        <div class="cc-header">
-          <span class="cc-emoji">${ch.emoji}</span>
-          <div class="cc-info">
-            <div class="cc-title">${ch.title}</div>
-            <div class="cc-desc">${ch.desc}</div>
-          </div>
-        </div>
-        <div class="cc-meta">
-          <span class="cc-chip pts">🏅 ${ch.pts} pts</span>
-          <span class="cc-chip">👥 ${ch.participants.toLocaleString()}</span>
-          <span class="cc-chip">⏰ ${ch.deadline}</span>
-          <span class="cc-chip" style="background:#FFF3E0;color:#E65100">${ch.tag}</span>
-          ${isJoined ? '<span class="cc-chip joined-chip">✅ Joined</span>' : ''}
-        </div>
-        <button class="btn-primary cc-join-btn ${isJoined ? 'joined-btn' : ''}"
-          onclick="joinChallenge('${ch.id}', ${ch.pts})"
-          ${isJoined ? 'disabled' : ''}>
-          ${isJoined ? '✅ You\'re In!' : `🚀 Join — Earn ${ch.pts} pts`}
-        </button>
-      </div>
-    `;
+    return '<div class="chal-card ' + (isJoined ? 'ch-joined' : '') + '" id="cc-' + ch.id + '">' +
+      '<div class="chal-top">' +
+        '<div class="chal-emoji-wrap">' + ch.emoji + '</div>' +
+        '<div class="chal-head">' +
+          '<div class="chal-title">' + ch.title + '</div>' +
+          '<div class="chal-hash">' + ch.tag + '</div>' +
+        '</div>' +
+        '<div class="chal-pts-badge">' + ch.pts + ' pts</div>' +
+      '</div>' +
+      '<div class="chal-body">' +
+        '<div class="chal-desc">' + ch.desc + '</div>' +
+        '<div class="chal-chips">' +
+          '<span class="chal-chip">👥 ' + ch.participants.toLocaleString() + '</span>' +
+          '<span class="chal-chip">⏰ ' + ch.deadline + ' left</span>' +
+          (isJoined ? '<span class="chal-chip green">✅ Joined</span>' : '') +
+        '</div>' +
+        '<button class="btn-primary chal-join-btn ' + (isJoined ? 'chal-joined-btn' : '') + '" ' +
+          'onclick="joinChallenge(\'' + ch.id + '\',' + ch.pts + ')" ' +
+          (isJoined ? 'disabled' : '') + '>' +
+          (isJoined ? '✅ You\'re In!' : '🚀 Join & Earn ' + ch.pts + ' pts') +
+        '</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 
   updateChallengeStats();
 }
 
 function joinChallenge(id, pts) {
-  if (state.challengesJoined.includes(id)) {
-    showToast('You already joined this challenge!', 'error');
-    return;
-  }
-  state.challengesJoined.push(id);
-  state.challengePoints = (state.challengePoints || 0) + pts;
-  saveState();
-  addPoints(pts, 'Joined challenge', '🏆');
+  if (S.challengesJoined.includes(id)) { showToast('You already joined this challenge!', 'error'); return; }
+  S.challengesJoined.push(id);
+  S.challengePoints = (S.challengePoints || 0) + pts;
+  save();
+  addPoints(pts, 'Joined a challenge', '🏆');
   initChallenges();
   updateChallengeStats();
 }
 
 function updateChallengeStats() {
-  document.getElementById('csJoined').textContent = state.challengesJoined.length;
-  document.getElementById('csEarned').textContent = (state.challengePoints || 0).toLocaleString();
+  setText('csJoined', S.challengesJoined.length);
+  setText('csEarned', (S.challengePoints || 0).toLocaleString());
 }
 
-// ── COMMUNITY ─────────────────────────────
+/* ==========================================
+   COMMUNITY
+   ========================================== */
 const DEMO_POSTS = [
-  {
-    id: 1, user: 'Zara K.', initial: 'Z', emoji: '🥙', time: '2 hours ago',
-    recipe: 'Mayo Chicken Zinger Wrap', tag: '#LeftoverChicken', pts: 200,
-    desc: 'Turned yesterday\'s leftover chicken into this amazing zinger wrap! National Mayo makes everything better 😍',
-    likes: 342, comments: 28, trending: true, challenge: true
-  },
-  {
-    id: 2, user: 'Ahmed R.', initial: 'A', emoji: '🍟', time: '4 hours ago',
-    recipe: 'Spicy Mayo Loaded Fries', tag: '#MayoMaster', pts: 150,
-    desc: 'My leftover fries were about to go to waste — then came the spicy mayo rescue! Game changer 🔥',
-    likes: 218, comments: 15, trending: true, challenge: true
-  },
-  {
-    id: 3, user: 'Sana M.', initial: 'S', emoji: '🌮', time: '6 hours ago',
-    recipe: 'Roti Leftover Roll', tag: '#RotiReinvention', pts: 175,
-    desc: 'Morning roti + leftover aloo + National Mayo = the best 5-minute breakfast ever! No waste kitchen ✨',
-    likes: 156, comments: 22, trending: false, challenge: true
-  },
-  {
-    id: 4, user: 'Bilal T.', initial: 'B', emoji: '🥗', time: '8 hours ago',
-    recipe: 'Creamy Veggie Mayo Bowl', tag: '#5MinSnack', pts: 100,
-    desc: 'Leftover veggies from yesterday\'s dinner became today\'s healthy bowl. Going green with National Foods!',
-    likes: 94, comments: 11, trending: false, challenge: true
-  },
-  {
-    id: 5, user: 'Hina F.', initial: 'H', emoji: '🍳', time: '12 hours ago',
-    recipe: 'Mayo Egg Breakfast Toast', tag: '#MayoMaster', pts: 200,
-    desc: 'Simple leftover eggs, a generous spread of National Mayo on toast — perfection! Who knew zero waste could taste this good?',
-    likes: 276, comments: 19, trending: true, challenge: true
-  },
-  {
-    id: 6, user: 'Usman L.', initial: 'U', emoji: '🍚', time: '1 day ago',
-    recipe: 'Biryani Leftover Rice Bowl', tag: '#LeftoverChicken', pts: 150,
-    desc: 'Leftover biryani rice + shredded chicken + National Mayo drizzle = FIRE. Don\'t sleep on this combo 🤤',
-    likes: 389, comments: 44, trending: true, challenge: true
-  }
+  { id:1, user:'Zara K.', init:'Z', color:'#C62828', emoji:'🥙', time:'2 hours ago', name:'Mayo Chicken Zinger Wrap', tag:'#LeftoverChicken', pts:200, desc:'Turned yesterday\'s leftover chicken into this amazing zinger wrap! National Mayo makes everything better 😍', likes:342, comments:28, trending:true, challenge:true, gradient:'ft-gradient-1' },
+  { id:2, user:'Ahmed R.', init:'A', color:'#1565C0', emoji:'🍟', time:'4 hours ago', name:'Spicy Mayo Loaded Fries', tag:'#MayoMaster', pts:150, desc:'My leftover fries were about to go to waste — then came the spicy mayo rescue! Game changer 🔥', likes:218, comments:15, trending:true, challenge:true, gradient:'ft-gradient-2' },
+  { id:3, user:'Sana M.', init:'S', color:'#2E7D32', emoji:'🌮', time:'6 hours ago', name:'Roti Leftover Roll', tag:'#RotiReinvention', pts:175, desc:'Morning roti + leftover aloo + National Mayo = the best 5-min breakfast ever! No waste kitchen ✨', likes:156, comments:22, trending:false, challenge:true, gradient:'ft-gradient-3' },
+  { id:4, user:'Bilal T.', init:'B', color:'#6A1B9A', emoji:'🥗', time:'8 hours ago', name:'Creamy Veggie Mayo Bowl', tag:'#5MinSnack', pts:100, desc:'Leftover veggies from dinner became today\'s healthy bowl. Going green with National Foods!', likes:94, comments:11, trending:false, challenge:true, gradient:'ft-gradient-4' },
+  { id:5, user:'Hina F.', init:'H', color:'#00695C', emoji:'🍳', time:'12 hours ago', name:'Mayo Egg Breakfast Toast', tag:'#MayoMaster', pts:200, desc:'Simple leftover eggs, National Mayo on toast — perfection! Who knew zero waste tastes this good?', likes:276, comments:19, trending:true, challenge:true, gradient:'ft-gradient-5' },
+  { id:6, user:'Usman L.', init:'U', color:'#E65100', emoji:'🍚', time:'1 day ago', name:'Biryani Leftover Rice Bowl', tag:'#LeftoverChicken', pts:150, desc:'Leftover biryani rice + shredded chicken + National Mayo drizzle = FIRE. Don\'t sleep on this 🤤', likes:389, comments:44, trending:true, challenge:true, gradient:'ft-gradient-6' }
 ];
 
-let activeFeedFilter = 'all';
-
-function initCommunity() {
-  renderFeed(DEMO_POSTS);
-}
+function initCommunity() { renderFeed(DEMO_POSTS); }
 
 function filterFeed(filter, el) {
-  activeFeedFilter = filter;
   document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-
   let posts = [...DEMO_POSTS];
   if (filter === 'trending') posts = posts.filter(p => p.trending);
   if (filter === 'challenges') posts = posts.filter(p => p.challenge);
@@ -671,416 +538,410 @@ function filterFeed(filter, el) {
 
 function renderFeed(posts) {
   const feed = document.getElementById('communityFeed');
-  feed.innerHTML = posts.map(p => `
-    <div class="feed-card">
-      <div class="fc-thumb">
-        <span class="fc-tag">${p.tag}</span>
-        <span class="fc-pts-badge">+${p.pts} pts</span>
-        ${p.emoji}
-      </div>
-      <div class="fc-body">
-        <div class="fc-user">
-          <div class="fc-avatar">${p.initial}</div>
-          <div>
-            <div class="fc-username">${p.user}</div>
-            <div class="fc-time">${p.time}</div>
-          </div>
-        </div>
-        <div class="fc-recipe-name">${p.recipe}</div>
-        <div class="fc-recipe-desc">${p.desc}</div>
-        <div class="fc-actions">
-          <button class="fc-action-btn" onclick="likePost(this, ${p.id})">
-            ❤️ <span>${p.likes}</span>
-          </button>
-          <button class="fc-action-btn">💬 ${p.comments}</button>
-          <button class="fc-action-btn" onclick="showToast('Recipe shared! 🚀', 'success')">📤 Share</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  if (!feed) return;
+  feed.innerHTML = posts.map(p => '' +
+    '<div class="feed-card">' +
+      '<div class="feed-thumb ' + p.gradient + '">' +
+        '<span class="feed-badge-tag">' + p.tag + '</span>' +
+        '<span class="feed-pts-badge">+' + p.pts + ' pts</span>' +
+        p.emoji +
+        '<div class="feed-nfl-badge"><img src="assets/logo.svg" alt="NFL" onerror="this.src=\'assets/logo.png\';this.onerror=null"/></div>' +
+      '</div>' +
+      '<div class="feed-body">' +
+        '<div class="feed-user">' +
+          '<div class="feed-avatar" style="background:' + p.color + '">' + p.init + '</div>' +
+          '<div class="feed-user-info">' +
+            '<div class="feed-username">' + p.user + ' <span class="feed-verified">&#11088;</span></div>' +
+            '<div class="feed-time">' + p.time + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="feed-recipe-name">' + p.name + '</div>' +
+        '<div class="feed-desc">' + p.desc + '</div>' +
+        '<div class="feed-actions">' +
+          '<button class="feed-action" onclick="likePost(this,' + p.id + ')">❤️ <span>' + p.likes + '</span></button>' +
+          '<button class="feed-action">💬 ' + p.comments + '</button>' +
+          '<button class="feed-action" onclick="showToast(\'Recipe shared! 🚀\',\'success\')">📤 Share</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
 }
 
 function likePost(btn, id) {
   const span = btn.querySelector('span');
-  const current = parseInt(span.textContent);
-  if (btn.classList.contains('liked')) {
-    span.textContent = current - 1;
-    btn.classList.remove('liked');
-  } else {
-    span.textContent = current + 1;
-    btn.classList.add('liked');
-    showToast('❤️ Liked!', 'success');
-  }
+  const n = parseInt(span ? span.textContent : 0);
+  const liked = btn.classList.toggle('liked');
+  if (span) span.textContent = liked ? n + 1 : n - 1;
+  if (liked) showToast('❤️ Liked!', 'success');
 }
 
-// ── POST MODAL ────────────────────────────
+/* ==========================================
+   POST MODAL
+   ========================================== */
 function openPostModal() {
-  document.getElementById('postModal').style.display = 'flex';
+  const m = document.getElementById('postModal');
+  if (m) m.style.display = 'flex';
 }
 
 function closeModal(id) {
-  document.getElementById(id).style.display = 'none';
+  const m = document.getElementById(id);
+  if (m) m.style.display = 'none';
 }
 
 function simulateUpload() {
-  state.uploadedPhoto = true;
   document.getElementById('uploadIcon').textContent = '✅';
   document.getElementById('uploadText').textContent = 'Photo added!';
+  const uz = document.getElementById('uploadZone');
+  if (uz) uz.style.background = 'var(--green-light)';
 }
 
 function submitPost() {
-  const name = document.getElementById('postName').value.trim();
-  if (!name) { showToast('Please enter a recipe name!', 'error'); return; }
+  const name = (document.getElementById('postName').value || '').trim();
+  if (!name) { showToast('Please add a recipe name!', 'error'); return; }
+  const desc = (document.getElementById('postDesc').value || '').trim() || 'Shared from #NoWasteMakeTaste ✨';
+  const tag  = document.getElementById('postChallenge').value || '#NoWasteMakeTaste';
+  const emojis = ['🥙','🍳','🥗','🍟','🌮','🍚','🥚','🍝','🫓'];
+  const grads = ['ft-gradient-1','ft-gradient-2','ft-gradient-3','ft-gradient-4','ft-gradient-5','ft-gradient-6'];
+  const colors = ['#C62828','#1565C0','#2E7D32','#6A1B9A','#00695C','#E65100'];
+  const rand = Math.floor(Math.random() * 6);
 
-  const tag = document.getElementById('postChallenge').value;
-  const desc = document.getElementById('postDesc').value.trim() || 'Shared from #NoWasteMakeTaste ✨';
-  const emojis = ['🥙', '🍳', '🥗', '🍟', '🌮', '🍚', '🥚', '🍝'];
-  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+  DEMO_POSTS.unshift({
+    id: Date.now(), user: 'You', init: 'Y', color: colors[rand],
+    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    time: 'Just now', name, tag, pts: 50, desc,
+    likes: 0, comments: 0, trending: false, challenge: !!tag, gradient: grads[rand]
+  });
 
-  const newPost = {
-    id: Date.now(), user: 'You', initial: 'Y', emoji,
-    time: 'Just now', recipe: name,
-    tag: tag || '#NoWasteMakeTaste', pts: 50,
-    desc, likes: 0, comments: 0, trending: false, challenge: !!tag
-  };
-
-  DEMO_POSTS.unshift(newPost);
   closeModal('postModal');
   renderFeed(DEMO_POSTS);
-
-  state.postsCreated++;
-  saveState();
-  addPoints(50, 'Posted a recipe', '📸');
-
-  // Reset form
   document.getElementById('postName').value = '';
   document.getElementById('postDesc').value = '';
   document.getElementById('postChallenge').value = '';
   document.getElementById('uploadIcon').textContent = '📷';
-  document.getElementById('uploadText').textContent = 'Tap to add photo';
+  document.getElementById('uploadText').textContent = 'Tap to add your photo';
+  const uz = document.getElementById('uploadZone');
+  if (uz) uz.style.background = '';
+
+  S.postsCreated++;
+  save();
+  addPoints(50, 'Posted a recipe', '📸');
+  navigate('community');
 }
 
-// ── WALLET ────────────────────────────────
+/* ==========================================
+   WALLET
+   ========================================== */
 function renderWallet() {
-  const pts = state.points;
-  const tier = getCurrentTier();
-  const next = getNextTier();
+  const pts  = S.points;
+  const tier = currentTier();
+  const next = nextTier();
 
-  document.getElementById('walletPts').textContent = pts.toLocaleString();
-  document.getElementById('walletTierIcon').textContent = tier.icon;
-  document.getElementById('walletTierName').textContent = tier.name;
+  setText('walletPts', pts.toLocaleString());
+  setText('walletTierIcon', tier.icon);
+  setText('walletTierName', tier.name);
 
-  // Progress bar
   if (next) {
     const pct = Math.min(100, ((pts - tier.min) / (next.min - tier.min)) * 100);
-    document.getElementById('tierProgressFill').style.width = pct + '%';
-    document.getElementById('tpNext').textContent = next.name;
-    document.getElementById('tpCurrent').textContent = `${pts.toLocaleString()} pts`;
-    document.getElementById('tpTarget').textContent = `${next.min.toLocaleString()} pts`;
+    const fill = document.getElementById('tierProgressFill');
+    if (fill) fill.style.width = Math.round(pct) + '%';
+    setText('tpNext', next.name);
+    setText('tpCurrent', pts.toLocaleString() + ' pts');
+    setText('tpTarget', next.min.toLocaleString() + ' pts needed');
   } else {
-    document.getElementById('tierProgressFill').style.width = '100%';
-    document.getElementById('tpNext').textContent = 'Max Tier Reached!';
-    document.getElementById('tpCurrent').textContent = `${pts.toLocaleString()} pts`;
-    document.getElementById('tpTarget').textContent = '∞';
+    const fill = document.getElementById('tierProgressFill');
+    if (fill) fill.style.width = '100%';
+    setText('tpNext', 'MAX TIER 👑');
+    setText('tpCurrent', pts.toLocaleString() + ' pts');
+    setText('tpTarget', 'Legendary!');
   }
 
-  // Tiers list
   const tl = document.getElementById('tiersList');
-  tl.innerHTML = TIERS.map(t => {
-    const isActive = t.id === state.tier;
-    const isCompleted = pts >= t.max && t.max !== Infinity;
-    return `
-      <div class="tier-item ${isActive ? 'active-tier' : ''} ${isCompleted ? 'completed' : ''}">
-        <span class="tier-icon">${t.icon}</span>
-        <div class="tier-info">
-          <div class="tier-name">${t.name}</div>
-          <div class="tier-range">${t.min.toLocaleString()} – ${t.max === Infinity ? '∞' : t.max.toLocaleString()} pts</div>
-        </div>
-        <span class="tier-status ${isActive ? 'current' : isCompleted ? 'done' : 'locked'}">
-          ${isActive ? '● Current' : isCompleted ? '✓ Done' : '🔒 Locked'}
-        </span>
-      </div>
-    `;
+  if (tl) tl.innerHTML = TIERS.map(t => {
+    const isActive = t.id === S.tier;
+    const done = pts > t.max && t.max !== Infinity;
+    return '<div class="tier-row ' + (isActive ? 'tr-active' : done ? 'tr-done' : '') + '">' +
+      '<span class="tier-row-icon">' + t.icon + '</span>' +
+      '<div class="tier-row-info">' +
+        '<div class="tier-row-name">' + t.name + '</div>' +
+        '<div class="tier-row-range">' + t.min.toLocaleString() + (t.max === Infinity ? '+ pts' : ' – ' + t.max.toLocaleString() + ' pts') + '</div>' +
+      '</div>' +
+      '<span class="tier-row-status ' + (isActive ? 'ts-current' : done ? 'ts-done' : 'ts-locked') + '">' +
+        (isActive ? '● Current' : done ? '✓ Done' : '🔒') +
+      '</span>' +
+    '</div>';
   }).join('');
 
-  // History
   const ph = document.getElementById('pointsHistory');
-  if (state.pointsHistory.length === 0) {
-    ph.innerHTML = '<p class="empty-state">No activity yet. Start cooking!</p>';
-  } else {
-    ph.innerHTML = state.pointsHistory.slice(0, 15).map(h => `
-      <div class="ph-item">
-        <span class="ph-icon">${h.icon || '⭐'}</span>
-        <div class="ph-info">
-          <div class="ph-action">${h.reason}</div>
-          <div class="ph-time">${formatTime(h.time)}</div>
-        </div>
-        <span class="ph-pts ${h.pts < 0 ? 'neg' : ''}">${h.pts > 0 ? '+' : ''}${h.pts}</span>
-      </div>
-    `).join('');
+  if (ph) {
+    if (!S.pointsHistory.length) {
+      ph.innerHTML = '<div class="empty-msg"><span>⭐</span><p>No activity yet. Start cooking!</p></div>';
+    } else {
+      ph.innerHTML = S.pointsHistory.slice(0, 20).map(h =>
+        '<div class="ph-row">' +
+          '<span class="ph-ico">' + (h.icon || '⭐') + '</span>' +
+          '<div class="ph-inf"><div class="ph-act">' + h.reason + '</div><div class="ph-t">' + fmtTime(h.time) + '</div></div>' +
+          '<span class="ph-amt ' + (h.pts >= 0 ? 'pos' : 'neg') + '">' + (h.pts >= 0 ? '+' : '') + h.pts + '</span>' +
+        '</div>'
+      ).join('');
+    }
   }
 }
 
-function formatTime(iso) {
+function fmtTime(iso) {
   if (!iso) return 'Just now';
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (d < 1) return 'Just now';
+  if (d < 60) return d + 'm ago';
+  if (d < 1440) return Math.floor(d/60) + 'h ago';
+  return Math.floor(d/1440) + 'd ago';
 }
 
-// ── RECYCLE ───────────────────────────────
-let recycleHistory = [];
+/* ==========================================
+   RECYCLE
+   ========================================== */
+const recycleLog = [];
 
 function scanBottle() {
   const btn = document.getElementById('scanBtn');
-  const status = document.getElementById('vmStatus');
-  btn.disabled = true;
+  const txt = document.getElementById('vmStatus');
+  if (btn) btn.disabled = true;
 
-  const steps = ['Scanning QR code…', 'Verifying bottle…', 'Calculating impact…', '✅ Bottle accepted!'];
+  const steps = [
+    { msg: 'SCANNING…', dot: '#FFC107' },
+    { msg: 'VERIFYING…', dot: '#FF9800' },
+    { msg: 'CALCULATING IMPACT…', dot: '#FF5722' },
+    { msg: 'ACCEPTED! ✓', dot: '#00FF9F' }
+  ];
   let i = 0;
+  const dot = document.getElementById('vmDot');
+
   const iv = setInterval(() => {
-    status.textContent = steps[i];
+    if (txt) txt.textContent = steps[i].msg;
+    if (dot) dot.style.background = steps[i].color;
     i++;
     if (i >= steps.length) {
       clearInterval(iv);
-      processBottleReturn();
+      processReturn();
       setTimeout(() => {
-        status.textContent = 'Ready to scan';
-        btn.disabled = false;
-      }, 2000);
+        if (txt) txt.textContent = 'READY';
+        if (dot) dot.style.background = '#00FF9F';
+        if (btn) btn.disabled = false;
+      }, 2200);
     }
-  }, 700);
+  }, 650);
 }
 
-function processBottleReturn() {
-  state.bottlesReturned++;
+function processReturn() {
+  S.bottlesReturned++;
   const pts = 25;
-  recycleHistory.unshift({
-    date: new Date().toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' }),
+  recycleLog.unshift({
     type: 'National Mayo Bottle (500g)',
+    date: new Date().toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' }),
     pts
   });
-
-  saveState();
-  addPoints(pts, 'Bottle returned ♻️', '♻️');
+  save();
+  addPoints(pts, 'Bottle returned', '♻️');
   renderRecycleStats();
+  refreshHomeStats();
 }
 
 function renderRecycleStats() {
-  const b = state.bottlesReturned;
-  document.getElementById('rsBottles').textContent = b;
-  document.getElementById('rsPlastic').textContent = `${(b * 45).toLocaleString()}g`;
-  document.getElementById('rsCarbon').textContent = `${(b * 120).toLocaleString()}g`;
-  document.getElementById('rsPoints').textContent = (b * 25).toLocaleString();
+  const b = S.bottlesReturned;
+  setText('rsBottles', b);
+  setText('rsPlastic', (b * 45).toLocaleString() + 'g');
+  setText('rsCarbon',  (b * 120).toLocaleString() + 'g');
+  setText('rsPoints',  (b * 25).toLocaleString());
 
   const rh = document.getElementById('recycleHistory');
-  if (recycleHistory.length === 0 && b === 0) {
-    rh.innerHTML = '<p class="empty-state">No returns yet. Scan your first bottle!</p>';
+  if (!rh) return;
+  if (!recycleLog.length) {
+    rh.innerHTML = '<div class="empty-msg"><span>♻️</span><p>No returns yet. Scan your first bottle!</p></div>';
   } else {
-    const hist = recycleHistory.slice(0, 10);
-    rh.innerHTML = hist.map(h => `
-      <div class="rh-item">
-        <span>♻️ ${h.type}</span>
-        <span>${h.date}</span>
-        <span class="rh-pts">+${h.pts} pts</span>
-      </div>
-    `).join('');
-    if (hist.length === 0) rh.innerHTML = '<p class="empty-state">Start returning bottles to see history!</p>';
+    rh.innerHTML = recycleLog.slice(0, 8).map(r =>
+      '<div class="rh-row">' +
+        '<span class="rh-row-type">♻️ ' + r.type + '</span>' +
+        '<span class="rh-row-date">' + r.date + '</span>' +
+        '<span class="rh-row-pts">+' + r.pts + ' pts</span>' +
+      '</div>'
+    ).join('');
   }
 }
 
-// ── SUSTAINABILITY ────────────────────────
+/* ==========================================
+   SUSTAINABILITY
+   ========================================== */
 function renderSustain() {
-  const b = state.bottlesReturned;
-  const m = state.mealsSaved;
-  const fw = (m * 0.3).toFixed(1);
-  const plastic = b * 45;
-  const carbon = b * 120;
-  const c = state.challengesJoined.length;
+  const b = S.bottlesReturned;
+  const m = S.mealsSaved;
+  const c = (S.challengesJoined || []).length;
 
-  document.getElementById('siMeals').textContent = m;
-  document.getElementById('siFoodWaste').textContent = `${fw} kg`;
-  document.getElementById('siBottlesR').textContent = b;
-  document.getElementById('siPlastic').textContent = `${plastic}g`;
-  document.getElementById('siCarbon').textContent = `${carbon}g`;
+  setText('siMeals',     m);
+  setText('siFoodWaste', (m * 0.3).toFixed(1) + ' kg');
+  setText('siBottlesR',  b);
+  setText('siPlastic',   (b * 45) + 'g');
+  setText('siCarbon',    (b * 120) + 'g');
+  setText('goalMeals',      m + ' / 10');
+  setText('goalBottles',    b + ' / 5');
+  setText('goalChallenges', c + ' / 3');
+  setText('certPts', S.points.toLocaleString());
 
-  // Goals
-  document.getElementById('goalMeals').textContent = `${m} / 10`;
-  document.getElementById('goalBottles').textContent = `${b} / 5`;
-  document.getElementById('goalChallenges').textContent = `${c} / 3`;
-
-  document.getElementById('pfMeals').style.width = `${Math.min(100, (m / 10) * 100)}%`;
-  document.getElementById('pfBottles').style.width = `${Math.min(100, (b / 5) * 100)}%`;
-  document.getElementById('pfChallenges').style.width = `${Math.min(100, (c / 3) * 100)}%`;
-
-  document.getElementById('certPts').textContent = state.points.toLocaleString();
+  animWidth('pfMeals',      Math.min(100, (m/10)*100));
+  animWidth('pfBottles',    Math.min(100, (b/5)*100));
+  animWidth('pfChallenges', Math.min(100, (c/3)*100));
+  animWidth('ccFill',       Math.min(100, (S.points/1000)*100));
 }
 
-// ── REWARDS ───────────────────────────────
-const REWARDS_DATA = [
-  { id: 'mayo-discount', emoji: '🫙', name: '15% Mayo Discount', desc: 'Discount on your next National Mayo purchase', pts: 200 },
-  { id: 'product-bundle', emoji: '🛒', name: 'Product Bundle', desc: 'National Foods condiments bundle pack', pts: 500 },
-  { id: 'recipe-kit', emoji: '👨‍🍳', name: 'Recipe Kit', desc: 'Professional recipe kit with National products', pts: 800 },
-  { id: 'creator-badge', emoji: '🏆', name: 'Creator Badge', desc: 'Exclusive NFL Master Creator digital badge', pts: 1000 },
-  { id: 'shopping-voucher', emoji: '🎟️', name: 'Rs 500 Voucher', desc: 'Shopping voucher for National Foods products', pts: 350 },
-  { id: 'premium-kit', emoji: '✨', name: 'Premium Cooking Kit', desc: 'Premium NFL branded cooking accessories', pts: 1500 }
+function renderSustainIfOpen() {
+  if (currentPage === 'sustain') renderSustain();
+}
+
+function animWidth(id, pct) {
+  const el = document.getElementById(id);
+  if (el) setTimeout(() => { el.style.width = Math.round(pct) + '%'; }, 100);
+}
+
+/* ==========================================
+   REWARDS
+   ========================================== */
+const REWARDS = [
+  { id: 'mayo-disc',     emoji: '🫙', name: '15% Mayo Discount',    desc: 'Discount on your next National Mayo purchase',        pts: 200 },
+  { id: 'bundle',        emoji: '🛒', name: 'Product Bundle',        desc: 'National Foods condiments bundle pack',               pts: 500 },
+  { id: 'recipe-kit',    emoji: '👨‍🍳', name: 'Recipe Kit',           desc: 'Professional recipe kit with National products',       pts: 800 },
+  { id: 'creator-badge', emoji: '🏆', name: 'Creator Badge',         desc: 'Exclusive NFL Master Creator digital badge',           pts: 1000 },
+  { id: 'voucher',       emoji: '🎟️', name: 'Rs 500 Voucher',        desc: 'Shopping voucher for National Foods products',         pts: 350 },
+  { id: 'premium-kit',   emoji: '✨', name: 'Premium Cooking Kit',   desc: 'Premium NFL branded cooking accessories & apron',      pts: 1500 }
 ];
 
 function initRewards() { renderRewards(); }
 
 function renderRewards() {
-  const pts = state.points;
-  document.getElementById('rewardsPts').textContent = `${pts.toLocaleString()} pts`;
+  const pts = S.points;
+  setText('rewardsPts', pts.toLocaleString() + ' pts');
 
   const grid = document.getElementById('rewardsGrid');
-  grid.innerHTML = REWARDS_DATA.map(r => {
-    const canAfford = pts >= r.pts;
-    const redeemed = state.rewardsRedeemed.some(rd => rd.id === r.id);
-    return `
-      <div class="reward-card">
-        <span class="rc-emoji">${r.emoji}</span>
-        <div class="rc-name">${r.name}</div>
-        <div class="rc-desc">${r.desc}</div>
-        <span class="rc-pts">${r.pts.toLocaleString()} pts</span>
-        <button class="rc-redeem-btn" onclick="redeemReward('${r.id}')"
-          ${!canAfford || redeemed ? 'disabled' : ''}>
-          ${redeemed ? '✅ Redeemed' : canAfford ? 'Redeem Now' : `Need ${(r.pts - pts).toLocaleString()} more pts`}
-        </button>
-      </div>
-    `;
+  if (grid) grid.innerHTML = REWARDS.map(r => {
+    const can = pts >= r.pts;
+    const done = (S.rewardsRedeemed || []).some(d => d.id === r.id);
+    return '<div class="rw-card">' +
+      '<span class="rw-emoji">' + r.emoji + '</span>' +
+      '<div class="rw-name">' + r.name + '</div>' +
+      '<div class="rw-desc">' + r.desc + '</div>' +
+      '<span class="rw-pts">' + r.pts.toLocaleString() + ' pts</span>' +
+      '<button class="rw-btn" onclick="redeemReward(\'' + r.id + '\')" ' +
+        (!can || done ? 'disabled' : '') + '>' +
+        (done ? '✅ Redeemed' : can ? 'Redeem Now' : 'Need ' + (r.pts - pts).toLocaleString() + ' more pts') +
+      '</button>' +
+    '</div>';
   }).join('');
 
   const rl = document.getElementById('redeemedList');
-  if (state.rewardsRedeemed.length === 0) {
-    rl.innerHTML = '<p class="empty-state">No rewards redeemed yet. Start earning!</p>';
-  } else {
-    rl.innerHTML = state.rewardsRedeemed.map(r => `
-      <div class="redeemed-item">
-        <span class="ri-emoji">${r.emoji}</span>
-        <div class="ri-info">
-          <div class="ri-name">${r.name}</div>
-          <div class="ri-date">${r.date}</div>
-        </div>
-        <span class="ri-pts">-${r.pts} pts</span>
-      </div>
-    `).join('');
+  if (rl) {
+    const red = S.rewardsRedeemed || [];
+    rl.innerHTML = red.length ? red.map(r =>
+      '<div class="rd-item">' +
+        '<span class="rd-emoji">' + r.emoji + '</span>' +
+        '<div class="rd-info"><div class="rd-name">' + r.name + '</div><div class="rd-date">' + r.date + '</div></div>' +
+        '<span class="rd-pts">-' + r.pts + ' pts</span>' +
+      '</div>'
+    ).join('') : '<div class="empty-msg"><span>🎁</span><p>No rewards redeemed yet. Start earning points!</p></div>';
   }
 }
 
 function redeemReward(id) {
-  const reward = REWARDS_DATA.find(r => r.id === id);
-  if (!reward) return;
-  if (state.points < reward.pts) { showToast('Not enough points!', 'error'); return; }
-  if (state.rewardsRedeemed.some(r => r.id === id)) { showToast('Already redeemed!', 'error'); return; }
+  const r = REWARDS.find(x => x.id === id);
+  if (!r) return;
+  if (S.points < r.pts) { showToast('Not enough points!', 'error'); return; }
+  if ((S.rewardsRedeemed || []).some(d => d.id === id)) { showToast('Already redeemed!', 'error'); return; }
 
-  if (spendPoints(reward.pts)) {
-    state.rewardsRedeemed.push({
-      ...reward,
-      date: new Date().toLocaleDateString('en-PK')
-    });
-    state.pointsHistory.unshift({ pts: -reward.pts, reason: `Redeemed: ${reward.name}`, icon: reward.emoji, time: new Date().toISOString() });
-    saveState();
+  if (spendPoints(r.pts)) {
+    if (!S.rewardsRedeemed) S.rewardsRedeemed = [];
+    S.rewardsRedeemed.push({ ...r, date: new Date().toLocaleDateString('en-PK') });
+    S.pointsHistory.unshift({ pts: -r.pts, reason: 'Redeemed: ' + r.name, icon: r.emoji, time: new Date().toISOString() });
+    save();
     renderRewards();
-    showToast(`🎉 ${reward.name} redeemed! Check your email.`, 'success');
+    showToast('🎉 ' + r.name + ' redeemed! Check your email.', 'success');
   }
 }
 
-// ── ADMIN CHARTS ──────────────────────────
+/* ==========================================
+   ADMIN CHARTS
+   ========================================== */
 function initAdminCharts() {
-  const ingData = [
-    { label: 'Chicken', val: 85, raw: '85,420' },
-    { label: 'Rice', val: 72, raw: '72,180' },
-    { label: 'Roti', val: 68, raw: '68,350' },
-    { label: 'Eggs', val: 61, raw: '61,290' },
-    { label: 'Bread', val: 54, raw: '54,100' },
-    { label: 'Fries', val: 43, raw: '43,760' }
-  ];
-
-  const prodData = [
-    { label: 'National Mayo', val: 100, raw: '340,872' },
-    { label: 'Ketchup', val: 62, raw: '211,350' },
-    { label: 'Chilli Sauce', val: 48, raw: '163,420' },
-    { label: 'Mustard', val: 31, raw: '105,680' }
-  ];
-
-  const engData = [
-    { label: 'Mon', val: 78, raw: '6,240' },
-    { label: 'Tue', val: 65, raw: '5,200' },
-    { label: 'Wed', val: 82, raw: '6,560' },
-    { label: 'Thu', val: 91, raw: '7,280' },
-    { label: 'Fri', val: 100, raw: '8,000' },
-    { label: 'Sat', val: 95, raw: '7,600' },
-    { label: 'Sun', val: 88, raw: '7,040' }
-  ];
-
-  renderBarChart('ingredientChart', ingData);
-  renderBarChart('productChart', prodData);
-  renderLineChart('engagementChart', engData);
+  setTimeout(() => {
+    renderBarChart('ingredientChart', [
+      { lbl: 'Chicken', pct: 85, num: '85,420' },
+      { lbl: 'Rice',    pct: 72, num: '72,180' },
+      { lbl: 'Roti',    pct: 68, num: '68,350' },
+      { lbl: 'Eggs',    pct: 61, num: '61,290' },
+      { lbl: 'Bread',   pct: 54, num: '54,100' },
+      { lbl: 'Fries',   pct: 43, num: '43,760' }
+    ]);
+    renderBarChart('productChart', [
+      { lbl: 'Natl Mayo',    pct: 100, num: '340,872' },
+      { lbl: 'Ketchup',      pct: 62,  num: '211,350' },
+      { lbl: 'Chilli Sauce', pct: 48,  num: '163,420' },
+      { lbl: 'Mustard',      pct: 31,  num: '105,680' }
+    ]);
+    renderLineChart('engagementChart', [
+      { day: 'Mon', pct: 78, num: '6,240' },
+      { day: 'Tue', pct: 65, num: '5,200' },
+      { day: 'Wed', pct: 82, num: '6,560' },
+      { day: 'Thu', pct: 91, num: '7,280' },
+      { day: 'Fri', pct: 100,num: '8,000' },
+      { day: 'Sat', pct: 95, num: '7,600' },
+      { day: 'Sun', pct: 88, num: '7,040' }
+    ]);
+  }, 300);
 }
 
 function renderBarChart(id, data) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.innerHTML = data.map(d => `
-    <div class="bc-item">
-      <span class="bc-label">${d.label}</span>
-      <div class="bc-bar-wrap"><div class="bc-bar" style="width:0%" data-w="${d.val}%"></div></div>
-      <span class="bc-val">${d.raw}</span>
-    </div>
-  `).join('');
-  setTimeout(() => {
-    el.querySelectorAll('.bc-bar').forEach(b => b.style.width = b.dataset.w);
-  }, 200);
+  el.innerHTML = data.map(d =>
+    '<div class="bc-row">' +
+      '<span class="bc-lbl">' + d.lbl + '</span>' +
+      '<div class="bc-track"><div class="bc-bar" data-w="' + d.pct + '%"></div></div>' +
+      '<span class="bc-num">' + d.num + '</span>' +
+    '</div>'
+  ).join('');
+  setTimeout(() => el.querySelectorAll('.bc-bar').forEach(b => { b.style.width = b.dataset.w; }), 100);
 }
 
 function renderLineChart(id, data) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.innerHTML = data.map(d => `
-    <div class="lc-row">
-      <span class="lc-day">${d.label}</span>
-      <div class="lc-bar-wrap"><div class="lc-bar" style="width:0%" data-w="${d.val}%"></div></div>
-      <span class="lc-val">${d.raw}</span>
-    </div>
-  `).join('');
-  setTimeout(() => {
-    el.querySelectorAll('.lc-bar').forEach(b => b.style.width = b.dataset.w);
-  }, 300);
+  el.innerHTML = data.map(d =>
+    '<div class="lc-row">' +
+      '<span class="lc-day">' + d.day + '</span>' +
+      '<div class="lc-track"><div class="lc-bar" data-w="' + d.pct + '%"></div></div>' +
+      '<span class="lc-num">' + d.num + '</span>' +
+    '</div>'
+  ).join('');
+  setTimeout(() => el.querySelectorAll('.lc-bar').forEach(b => { b.style.width = b.dataset.w; }), 150);
 }
 
-// ── TOAST ─────────────────────────────────
+/* ==========================================
+   TOAST
+   ========================================== */
 let toastTimer = null;
-function showToast(msg, type = '') {
+function showToast(msg, type) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg;
-  t.className = `toast ${type} show`;
+  t.className = 'toast show' + (type ? ' ' + type : '');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.className = 'toast', 3000);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 3200);
 }
 
-// ── POINTS ANIMATION ──────────────────────
-function animatePoints(pts) {
+/* ==========================================
+   FLOAT ANIMATION
+   ========================================== */
+function floatPoints(pts) {
   if (pts <= 0) return;
   const el = document.createElement('div');
   el.className = 'pts-float';
-  el.textContent = `+${pts} ⭐`;
-  el.style.left = `${20 + Math.random() * 60}%`;
-  el.style.top = '40%';
+  el.textContent = '+' + pts + ' ⭐';
+  el.style.cssText = 'left:' + (15 + Math.random()*60) + '%;top:40%;';
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1500);
+  setTimeout(() => el.remove(), 1700);
 }
-
-// ── NOTIFICATIONS ─────────────────────────
-document.getElementById('notifBtn').addEventListener('click', () => {
-  showToast('🔔 No new notifications', '');
-});
-
-// ── INIT ──────────────────────────────────
-loadState();
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(runSplash, 300);
-});

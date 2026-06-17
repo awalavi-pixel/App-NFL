@@ -1,286 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>#NoWasteMakeTaste - National Foods</title>
-  <!-- Google Fonts with offline fallback -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#C62828"/>
+  <title>#NoWasteMakeTaste &ndash; National Foods</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
   <style>
-    /* Critical inline fallback - ensures screens are hidden even if CSS file fails */
-    .screen { display: none !important; }
-    .screen.active { display: flex !important; }
-    .ob-slide { display: none !important; }
-    .ob-slide.active { display: block !important; }
-    .page { display: none !important; }
-    .page.active { display: block !important; }
+    /* Critical inline guard - hides all screens before CSS loads */
+    .screen{display:none!important}
+    .screen.active{display:flex!important}
+    .ob-slide{display:none!important}
+    .ob-slide.active{display:block!important}
+    .page{display:none!important}
+    .page.active{display:block!important}
+    .modal-overlay{display:none!important}
+    .more-menu{display:none!important}
+    .more-menu.open{display:flex!important}
   </style>
 </head>
 <body>
 
-<!-- SPLASH SCREEN -->
+<!-- ===== SPLASH ===== -->
 <div id="splash" class="screen active">
-  <div class="splash-bg">
-    <div class="splash-rings">
-      <div class="ring ring-1"></div>
-      <div class="ring ring-2"></div>
-      <div class="ring ring-3"></div>
+  <div class="splash-wrap">
+    <div class="splash-orb splash-orb-1"></div>
+    <div class="splash-orb splash-orb-2"></div>
+    <div class="splash-orb splash-orb-3"></div>
+    <div class="splash-inner">
+      <div class="splash-logo-ring">
+        <img src="assets/logo.svg" alt="National Foods" class="splash-logo-img" onerror="this.src='assets/logo.png';this.onerror=null"/>
+      </div>
+      <div class="splash-wave">
+        <div class="wave-bar wb1"></div>
+        <div class="wave-bar wb2"></div>
+        <div class="wave-bar wb3"></div>
+        <div class="wave-bar wb4"></div>
+        <div class="wave-bar wb5"></div>
+      </div>
+      <h1 class="splash-headline">#NoWasteMakeTaste</h1>
+      <p class="splash-tag">Turn Leftovers Into Delicious Possibilities</p>
+      <div class="splash-progress">
+        <div class="sp-track"><div class="sp-fill" id="spFill"></div></div>
+        <span class="sp-text" id="spText">Preparing your kitchen&hellip;</span>
+      </div>
     </div>
-    <div class="splash-content">
-      <div class="splash-logo">
-        <img src="assets/logo.png" alt="National Foods" class="logo-img"
-             onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'" />
-        <div id="logo-fallback" class="logo-fallback" style="display:none">
-          <div class="logo-fallback-inner">
-            <span class="logo-nf">National<br>Foods</span>
-            <span class="logo-since">SINCE 1970</span>
-          </div>
-        </div>
-      </div>
-      <h1 class="splash-title">#NoWasteMakeTaste</h1>
-      <p class="splash-tagline">Turn Leftovers Into Delicious Possibilities</p>
-      <div class="splash-loader">
-        <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
-        <p class="loader-text" id="loaderText">Loading your kitchen...</p>
-      </div>
+    <div class="splash-brand">
+      <span>Powered by</span>
+      <img src="assets/logo.svg" alt="National Foods" onerror="this.src='assets/logo.png';this.onerror=null"/>
+      <span>National Foods</span>
     </div>
   </div>
 </div>
 
-<!-- ONBOARDING -->
+<!-- ===== ONBOARDING ===== -->
 <div id="onboarding" class="screen" style="display:none">
-  <div class="onboarding-wrap">
-    <div class="onboarding-slides" id="onboardingSlides">
+  <div class="ob-header">
+    <img src="assets/logo.svg" alt="NFL" class="ob-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+    <button class="ob-skip-btn" id="obSkip">Skip</button>
+  </div>
 
-      <div class="ob-slide active" data-slide="0">
-        <div class="ob-visual ob-v1">
-          <div class="ob-icon-ring"><span class="ob-emoji">&#127957;</span></div>
-          <div class="floating-badge fb1">+50 pts</div>
-          <div class="floating-badge fb2">&#9851; Eco</div>
+  <div class="ob-slides-wrap">
+    <div class="ob-slide active">
+      <div class="ob-illus ob-illus-1">
+        <div class="ob-illus-ring">
+          <span class="ob-big-emoji">&#127957;</span>
         </div>
+        <div class="ob-float-pill op1">&#9851; Zero Waste</div>
+        <div class="ob-float-pill op2">+50 pts</div>
+        <div class="ob-float-pill op3">&#127807; Eco Win</div>
+      </div>
+      <div class="ob-text">
+        <div class="ob-chip">Step 1 of 3</div>
         <h2>Zero Waste Kitchen</h2>
-        <p>Transform your leftovers into restaurant-quality meals with National Foods Mayo &mdash; and earn rewards while saving the planet.</p>
+        <p>Pakistan wastes 36 million tonnes of food yearly. Transform your leftovers into restaurant-quality meals with National Mayo &mdash; and get rewarded for it.</p>
       </div>
-
-      <div class="ob-slide" data-slide="1" style="display:none">
-        <div class="ob-visual ob-v2">
-          <div class="ob-icon-ring"><span class="ob-emoji">&#129302;</span></div>
-          <div class="floating-badge fb1">AI Chef</div>
-          <div class="floating-badge fb3">&#127798; Spicy</div>
-        </div>
-        <h2>AI Recipe Magic</h2>
-        <p>Tell us what's in your fridge. Our AI chef crafts personalised recipes using National Mayo in seconds &mdash; no food wasted, all taste gained.</p>
-      </div>
-
-      <div class="ob-slide" data-slide="2" style="display:none">
-        <div class="ob-visual ob-v3">
-          <div class="ob-icon-ring"><span class="ob-emoji">&#127942;</span></div>
-          <div class="floating-badge fb1">Gold Tier</div>
-          <div class="floating-badge fb2">500 pts</div>
-        </div>
-        <h2>Earn &amp; Redeem</h2>
-        <p>Join challenges, post recipes, return bottles &mdash; climb loyalty tiers from Starter to NFL Master Creator and unlock exclusive rewards.</p>
-      </div>
-
     </div>
 
+    <div class="ob-slide" style="display:none">
+      <div class="ob-illus ob-illus-2">
+        <div class="ob-illus-ring">
+          <span class="ob-big-emoji">&#129302;</span>
+        </div>
+        <div class="ob-float-pill op1">AI Chef</div>
+        <div class="ob-float-pill op2">&#127798; Spicy</div>
+        <div class="ob-float-pill op3">Instant</div>
+      </div>
+      <div class="ob-text">
+        <div class="ob-chip">Step 2 of 3</div>
+        <h2>AI Recipe Magic</h2>
+        <p>Tell our AI what's in your fridge. It crafts personalised Pakistani recipes using National Mayo in seconds &mdash; no waste, maximum flavour.</p>
+      </div>
+    </div>
+
+    <div class="ob-slide" style="display:none">
+      <div class="ob-illus ob-illus-3">
+        <div class="ob-illus-ring">
+          <span class="ob-big-emoji">&#127942;</span>
+        </div>
+        <div class="ob-float-pill op1">&#128081; Gold Tier</div>
+        <div class="ob-float-pill op2">500 pts</div>
+        <div class="ob-float-pill op3">&#127873; Rewards</div>
+      </div>
+      <div class="ob-text">
+        <div class="ob-chip">Step 3 of 3</div>
+        <h2>Earn &amp; Win</h2>
+        <p>Join challenges, post recipes, return bottles. Climb from Starter to NFL Master Creator &mdash; unlock exclusive discounts, kits, and badges.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ob-footer">
     <div class="ob-dots" id="obDots">
       <span class="ob-dot active"></span>
       <span class="ob-dot"></span>
       <span class="ob-dot"></span>
     </div>
-
-    <div class="ob-actions">
-      <button class="btn-secondary" id="obSkip">Skip</button>
-      <button class="btn-primary" id="obNext">Next &rarr;</button>
-    </div>
-
-    <div class="ob-logo-small">
-      <img src="assets/logo.png" alt="National Foods" onerror="this.style.display='none'" />
-    </div>
+    <button class="btn-primary ob-next-btn" id="obNext">Get Started &#8594;</button>
   </div>
 </div>
 
-<!-- MAIN APP SHELL -->
+<!-- ===== MAIN APP ===== -->
 <div id="app" class="screen" style="display:none">
 
-  <!-- Header -->
+  <!-- TOP HEADER -->
   <header class="app-header">
-    <div class="header-left">
-      <img src="assets/logo.png" alt="NFL" class="header-logo"
-           onerror="this.style.display='none'" />
-      <div class="header-brand">
-        <span class="brand-name">#NoWasteMakeTaste</span>
-        <span class="brand-sub">National Foods</span>
+    <div class="ah-left">
+      <img src="assets/logo.svg" alt="NFL" class="ah-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+      <div class="ah-titles">
+        <span class="ah-campaign">#NoWasteMakeTaste</span>
+        <span class="ah-brand">National Foods Limited</span>
       </div>
     </div>
-    <div class="header-right">
-      <div class="points-pill">
-        <span>&#11088;</span>
-        <span id="hdrPts">0</span> pts
-      </div>
-      <div class="notif-btn" id="notifBtn">&#128276;</div>
+    <div class="ah-right">
+      <button class="ah-pts-btn" onclick="navigate('wallet')">
+        <span class="ah-pts-star">&#11088;</span>
+        <span id="hdrPts">0</span>
+        <span class="ah-pts-label">pts</span>
+      </button>
+      <button class="ah-notif" id="notifBtn">
+        <span>&#128276;</span>
+        <span class="notif-dot" id="notifDot"></span>
+      </button>
     </div>
   </header>
 
-  <!-- Page Container -->
-  <main class="page-container" id="pageContainer">
+  <!-- PAGES -->
+  <main class="pages" id="pageContainer">
 
     <!-- HOME -->
     <section class="page active" id="pageHome">
-      <div class="home-hero">
-        <div class="hero-greeting">
-          <h2>Good day, <span id="heroName">Chef</span>! &#128075;</h2>
-          <p>What's left in your kitchen today?</p>
+
+      <!-- Hero Banner -->
+      <div class="home-banner">
+        <div class="hb-content">
+          <div class="hb-logo-wrap">
+            <img src="assets/logo.svg" alt="NFL" class="hb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          </div>
+          <div class="hb-text">
+            <div class="hb-greeting">Good day, <strong id="heroName">Chef</strong>! &#128075;</div>
+            <div class="hb-sub">Ready to reduce waste &amp; earn rewards?</div>
+          </div>
+          <div class="hb-tier" id="hbTier">
+            <span id="hbTierIcon">&#127807;</span>
+            <span id="hbTierName">Starter</span>
+          </div>
         </div>
-        <div class="tier-badge" id="heroBadge">
-          <span id="heroBadgeIcon">&#127807;</span>
-          <span id="heroBadgeTier">Starter</span>
+        <div class="hb-stats">
+          <div class="hbs-item">
+            <span class="hbs-val" id="qsPoints">0</span>
+            <span class="hbs-lbl">Points</span>
+          </div>
+          <div class="hbs-div"></div>
+          <div class="hbs-item">
+            <span class="hbs-val" id="qsMeals">0</span>
+            <span class="hbs-lbl">Meals Saved</span>
+          </div>
+          <div class="hbs-div"></div>
+          <div class="hbs-item">
+            <span class="hbs-val" id="qsStreak">0</span>
+            <span class="hbs-lbl">Day Streak &#128293;</span>
+          </div>
         </div>
       </div>
 
-      <div class="quick-stats">
-        <div class="qs-card">
-          <span class="qs-icon">&#11088;</span>
-          <span class="qs-val" id="qsPoints">0</span>
-          <span class="qs-lbl">Points</span>
-        </div>
-        <div class="qs-card">
-          <span class="qs-icon">&#127860;</span>
-          <span class="qs-val" id="qsMeals">0</span>
-          <span class="qs-lbl">Meals Saved</span>
-        </div>
-        <div class="qs-card">
-          <span class="qs-icon">&#9851;</span>
-          <span class="qs-val" id="qsBottles">0</span>
-          <span class="qs-lbl">Bottles</span>
-        </div>
-        <div class="qs-card">
-          <span class="qs-icon">&#128293;</span>
-          <span class="qs-val" id="qsStreak">0</span>
-          <span class="qs-lbl">Streak</span>
-        </div>
+      <!-- Action Grid -->
+      <div class="section-head">
+        <h3>What would you like to do?</h3>
       </div>
-
-      <div class="section-header">
-        <h3>Quick Actions</h3>
-      </div>
-      <div class="quick-actions">
-        <button class="qa-btn" onclick="navigate('recipe')">
-          <span class="qa-icon">&#129302;</span>
-          <span>AI Recipe</span>
+      <div class="action-grid">
+        <button class="ag-card ag-primary" onclick="navigate('recipe')">
+          <div class="ag-icon-wrap ag-icon-purple">&#129302;</div>
+          <div class="ag-info">
+            <span class="ag-title">AI Recipe Generator</span>
+            <span class="ag-desc">Turn leftovers into magic</span>
+          </div>
+          <span class="ag-arrow">&#8594;</span>
         </button>
-        <button class="qa-btn" onclick="navigate('challenges')">
-          <span class="qa-icon">&#127942;</span>
-          <span>Challenges</span>
+        <button class="ag-card" onclick="navigate('challenges')">
+          <div class="ag-icon-wrap ag-icon-red">&#127942;</div>
+          <div class="ag-info">
+            <span class="ag-title">Weekly Challenges</span>
+            <span class="ag-desc">Win points &amp; badges</span>
+          </div>
+          <span class="ag-arrow">&#8594;</span>
         </button>
-        <button class="qa-btn" onclick="navigate('recycle')">
-          <span class="qa-icon">&#9851;</span>
-          <span>Recycle</span>
+        <button class="ag-card" onclick="navigate('community')">
+          <div class="ag-icon-wrap ag-icon-orange">&#128247;</div>
+          <div class="ag-info">
+            <span class="ag-title">Community Feed</span>
+            <span class="ag-desc">See what's cooking</span>
+          </div>
+          <span class="ag-arrow">&#8594;</span>
         </button>
-        <button class="qa-btn" onclick="navigate('community')">
-          <span class="qa-icon">&#128247;</span>
-          <span>Community</span>
+        <button class="ag-card" onclick="navigate('recycle')">
+          <div class="ag-icon-wrap ag-icon-green">&#9851;</div>
+          <div class="ag-info">
+            <span class="ag-title">Return Bottle</span>
+            <span class="ag-desc">Earn +25 pts per bottle</span>
+          </div>
+          <span class="ag-arrow">&#8594;</span>
         </button>
       </div>
 
-      <div class="section-header">
-        <h3>Today's Challenge</h3>
-        <a class="see-all" onclick="navigate('challenges')">See all</a>
+      <!-- Featured Challenge -->
+      <div class="section-head">
+        <h3>&#128293; Challenge of the Week</h3>
+        <a class="sh-link" onclick="navigate('challenges')">All challenges</a>
       </div>
-      <div class="featured-challenge">
-        <div class="fc-badge">&#127798; Hot</div>
-        <h4>Mayo Master Challenge</h4>
-        <p>Create the most creative mayo recipe using only 5 ingredients</p>
-        <div class="fc-meta">
-          <span>&#127885; 200 pts</span>
-          <span>&#128101; 1,247 joined</span>
-          <span>&#9200; 2 days left</span>
+      <div class="feat-challenge">
+        <div class="fch-glow"></div>
+        <div class="fch-content">
+          <div class="fch-left">
+            <div class="fch-tag">&#128293; TRENDING</div>
+            <h4>Mayo Master Challenge</h4>
+            <p>Create the most creative mayo recipe using only 5 ingredients &amp; win!</p>
+            <div class="fch-chips">
+              <span class="fch-chip gold">&#127885; 200 pts</span>
+              <span class="fch-chip">&#128101; 1,247</span>
+              <span class="fch-chip">&#9200; 2 days</span>
+            </div>
+          </div>
+          <div class="fch-right">
+            <div class="fch-emoji-big">&#127885;</div>
+            <button class="btn-white fch-btn" onclick="joinChallenge('mayo-master', 200)">Join</button>
+          </div>
         </div>
-        <button class="btn-primary fc-btn" onclick="joinChallenge('mayo-master', 200)">Join Now</button>
       </div>
 
-      <div class="section-header">
-        <h3>Trending Recipes</h3>
-        <a class="see-all" onclick="navigate('community')">See all</a>
-      </div>
-      <div class="trending-scroll">
-        <div class="trend-card" onclick="navigate('recipe')">
-          <div class="trend-thumb">&#129369;</div>
-          <p class="trend-name">Mayo Chicken Wrap</p>
-          <span class="trend-pts">+30 pts</span>
+      <!-- NFL Product Spotlight -->
+      <div class="product-spotlight">
+        <div class="ps-logo">
+          <img src="assets/logo.svg" alt="NFL" onerror="this.src='assets/logo.png';this.onerror=null"/>
         </div>
-        <div class="trend-card" onclick="navigate('recipe')">
-          <div class="trend-thumb">&#127834;</div>
-          <p class="trend-name">Creamy Rice Bowl</p>
-          <span class="trend-pts">+25 pts</span>
-        </div>
-        <div class="trend-card" onclick="navigate('recipe')">
-          <div class="trend-thumb">&#129367;</div>
-          <p class="trend-name">Veggie Toast</p>
-          <span class="trend-pts">+20 pts</span>
-        </div>
-        <div class="trend-card" onclick="navigate('recipe')">
-          <div class="trend-thumb">&#127839;</div>
-          <p class="trend-name">Spicy Mayo Fries</p>
-          <span class="trend-pts">+15 pts</span>
+        <div class="ps-text">
+          <div class="ps-eyebrow">Featured in every recipe</div>
+          <div class="ps-name">National Mayo</div>
+          <div class="ps-desc">Pakistan's #1 mayonnaise &mdash; the secret ingredient in every #NoWasteMakeTaste creation</div>
         </div>
       </div>
+
+      <!-- Trending Recipes -->
+      <div class="section-head">
+        <h3>&#128293; Trending Now</h3>
+        <a class="sh-link" onclick="navigate('community')">See all</a>
+      </div>
+      <div class="trending-row" id="trendingRow">
+        <div class="tr-card" onclick="navigate('recipe')">
+          <div class="tr-thumb tr-t1">&#129369;</div>
+          <div class="tr-info">
+            <div class="tr-name">Mayo Chicken Wrap</div>
+            <div class="tr-pts">+35 pts</div>
+          </div>
+        </div>
+        <div class="tr-card" onclick="navigate('recipe')">
+          <div class="tr-thumb tr-t2">&#127834;</div>
+          <div class="tr-info">
+            <div class="tr-name">Creamy Rice Bowl</div>
+            <div class="tr-pts">+30 pts</div>
+          </div>
+        </div>
+        <div class="tr-card" onclick="navigate('recipe')">
+          <div class="tr-thumb tr-t3">&#129367;</div>
+          <div class="tr-info">
+            <div class="tr-name">Veggie Toast</div>
+            <div class="tr-pts">+25 pts</div>
+          </div>
+        </div>
+        <div class="tr-card" onclick="navigate('recipe')">
+          <div class="tr-thumb tr-t4">&#127839;</div>
+          <div class="tr-info">
+            <div class="tr-name">Spicy Fries</div>
+            <div class="tr-pts">+20 pts</div>
+          </div>
+        </div>
+        <div class="tr-card" onclick="navigate('recipe')">
+          <div class="tr-thumb tr-t5">&#127859;</div>
+          <div class="tr-info">
+            <div class="tr-name">Roti Roll</div>
+            <div class="tr-pts">+20 pts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impact Banner -->
+      <div class="impact-banner">
+        <img src="assets/logo.svg" alt="NFL" class="ib-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <div class="ib-stats">
+          <div class="ib-stat"><span class="ib-val">47,812</span><span class="ib-lbl">meals saved</span></div>
+          <div class="ib-div"></div>
+          <div class="ib-stat"><span class="ib-val">19,834</span><span class="ib-lbl">bottles recycled</span></div>
+          <div class="ib-div"></div>
+          <div class="ib-stat"><span class="ib-val">84K+</span><span class="ib-lbl">community</span></div>
+        </div>
+        <div class="ib-label">Community Impact</div>
+      </div>
+
     </section>
 
     <!-- AI RECIPE GENERATOR -->
     <section class="page" id="pageRecipe" style="display:none">
-      <div class="page-hero recipe-hero">
-        <h2>&#129302; AI Recipe Generator</h2>
-        <p>Tell the AI what's in your kitchen</p>
+      <div class="recipe-hero-banner">
+        <div class="rhb-bg-orbs">
+          <div class="rhb-orb rhb-o1"></div>
+          <div class="rhb-orb rhb-o2"></div>
+        </div>
+        <img src="assets/logo.svg" alt="NFL" class="rhb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>AI Recipe Generator</h2>
+        <p>Tell me what's in your fridge &mdash; I'll create something amazing</p>
       </div>
 
-      <div class="recipe-form card">
-        <div class="form-group">
-          <label>&#129365; What leftovers do you have?</label>
-          <div class="ingredient-input-wrap">
-            <input type="text" id="ingredientInput" placeholder="e.g. chicken, bread, eggs..." class="form-input" />
-            <button class="add-ingr-btn" onclick="addIngredient()">+</button>
-          </div>
-          <div class="ingredient-tags" id="ingredientTags"></div>
+      <div class="recipe-form-card card">
+        <div class="rfc-label">&#129365; Add your leftovers</div>
+        <div class="ingr-input-row">
+          <input type="text" id="ingredientInput" placeholder="chicken, rice, bread, eggs..." class="form-input"/>
+          <button class="add-btn" onclick="addIngredient()">+</button>
+        </div>
+        <div class="ingr-tags" id="ingredientTags"></div>
+
+        <div class="quick-ingr">
+          <span class="qi-label">Quick add:</span>
+          <button class="qi-tag" onclick="quickAdd('chicken')">&#127855; Chicken</button>
+          <button class="qi-tag" onclick="quickAdd('rice')">&#127834; Rice</button>
+          <button class="qi-tag" onclick="quickAdd('roti')">&#129753; Roti</button>
+          <button class="qi-tag" onclick="quickAdd('eggs')">&#129379; Eggs</button>
+          <button class="qi-tag" onclick="quickAdd('vegetables')">&#129367; Veggies</button>
+          <button class="qi-tag" onclick="quickAdd('bread')">&#127838; Bread</button>
         </div>
 
-        <div class="form-row">
-          <div class="form-group half">
-            <label>&#127860; Meal Type</label>
+        <div class="form-grid">
+          <div class="fg-item">
+            <label class="fg-label">&#127860; Meal Type</label>
             <select id="mealType" class="form-select">
-              <option value="any">Any</option>
+              <option value="any">Any Meal</option>
               <option value="breakfast">Breakfast</option>
               <option value="lunch">Lunch</option>
               <option value="dinner">Dinner</option>
               <option value="snack">Snack</option>
             </select>
           </div>
-          <div class="form-group half">
-            <label>&#127798; Spice Level</label>
+          <div class="fg-item">
+            <label class="fg-label">&#127798; Spice Level</label>
             <select id="spiceLevel" class="form-select">
-              <option value="mild">Mild</option>
-              <option value="medium">Medium</option>
-              <option value="hot">Hot</option>
-              <option value="extra-hot">Extra Hot</option>
+              <option value="mild">Mild &#128513;</option>
+              <option value="medium">Medium &#128512;</option>
+              <option value="hot">Hot &#128525;</option>
+              <option value="extra-hot">Extra Hot &#128563;</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group half">
-            <label>&#9201; Cooking Time</label>
+          <div class="fg-item">
+            <label class="fg-label">&#9201; Cooking Time</label>
             <select id="cookTime" class="form-select">
-              <option value="5">5 minutes</option>
-              <option value="10">10 minutes</option>
-              <option value="20">20 minutes</option>
-              <option value="30">30 minutes</option>
-              <option value="45">45+ minutes</option>
+              <option value="5">Under 5 min</option>
+              <option value="10">Under 10 min</option>
+              <option value="20">Under 20 min</option>
+              <option value="30">Under 30 min</option>
+              <option value="45">45+ min</option>
             </select>
           </div>
-          <div class="form-group half">
-            <label>&#129382; Dietary Pref</label>
+          <div class="fg-item">
+            <label class="fg-label">&#129382; Diet</label>
             <select id="dietPref" class="form-select">
               <option value="none">No Preference</option>
               <option value="vegetarian">Vegetarian</option>
@@ -291,64 +391,88 @@
           </div>
         </div>
 
-        <button class="btn-primary generate-btn" id="generateBtn" onclick="generateRecipe()">
-          &#10024; Generate AI Recipe
+        <button class="btn-generate" id="generateBtn" onclick="generateRecipe()">
+          <span class="gen-icon">&#10024;</span>
+          <span>Generate My Recipe</span>
+          <span class="gen-pts">+pts</span>
         </button>
       </div>
 
-      <div class="ai-thinking" id="aiThinking" style="display:none">
-        <div class="thinking-dots">
-          <span></span><span></span><span></span>
+      <!-- AI Thinking -->
+      <div class="ai-loader" id="aiThinking" style="display:none">
+        <div class="ai-loader-inner">
+          <div class="ai-spinner">
+            <img src="assets/logo.svg" alt="" class="ai-spinner-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          </div>
+          <div class="ai-loader-msgs" id="aiMsgs">
+            <span class="ai-msg active">Analysing your ingredients...</span>
+          </div>
         </div>
-        <p>AI is crafting your recipe...</p>
       </div>
 
+      <!-- Recipe Result -->
       <div id="recipeResult" style="display:none">
-        <div class="recipe-result-card card">
-          <div class="rr-header">
-            <span class="rr-emoji" id="rrEmoji">&#127860;</span>
-            <div>
+        <div class="recipe-card card">
+          <div class="rc-header">
+            <div class="rc-emoji" id="rrEmoji">&#127860;</div>
+            <div class="rc-header-text">
               <h3 id="rrName">Recipe Name</h3>
-              <div class="rr-meta">
-                <span id="rrTime">&#9201; 15 min</span>
-                <span id="rrDiff">&#128104;&#8205;&#127859; Easy</span>
-                <span id="rrServings">&#128101; 2 servings</span>
+              <div class="rc-pills">
+                <span class="rc-pill" id="rrTime">&#9201; 15 min</span>
+                <span class="rc-pill" id="rrDiff">Easy</span>
+                <span class="rc-pill" id="rrServings">2 serves</span>
               </div>
             </div>
           </div>
 
-          <div class="rr-impact">
-            <div class="impact-chip">
+          <div class="rc-impact">
+            <div class="rci-item green">
               <span>&#127807;</span>
-              <span id="rrWaste">0.3 kg</span> waste saved
+              <div>
+                <span class="rci-val" id="rrWaste">0.3 kg</span>
+                <span class="rci-lbl">waste saved</span>
+              </div>
             </div>
-            <div class="impact-chip pts-chip">
+            <div class="rci-item gold">
               <span>&#11088;</span>
-              <span id="rrPts">30</span> pts earned
+              <div>
+                <span class="rci-val" id="rrPts">30</span>
+                <span class="rci-lbl">pts earned</span>
+              </div>
+            </div>
+            <div class="rci-item blue">
+              <span>&#9201;</span>
+              <div>
+                <span class="rci-val" id="rrTimeVal">15 min</span>
+                <span class="rci-lbl">prep time</span>
+              </div>
             </div>
           </div>
 
-          <div class="rr-section">
-            <h4>&#128230; Ingredients</h4>
-            <ul id="rrIngredients" class="rr-list"></ul>
+          <div class="rc-section">
+            <div class="rcs-head">&#128230; Ingredients</div>
+            <ul id="rrIngredients" class="ingr-list"></ul>
           </div>
 
-          <div class="rr-section">
-            <h4>&#128104;&#8205;&#127859; Steps</h4>
-            <ol id="rrSteps" class="rr-steps"></ol>
+          <div class="rc-section">
+            <div class="rcs-head">&#128104;&#8205;&#127859; How to Make It</div>
+            <ol id="rrSteps" class="steps-list"></ol>
           </div>
 
-          <div class="nfl-product-badge">
-            <img src="assets/logo.png" alt="NFL" onerror="this.style.display='none'" />
-            <div>
-              <span class="badge-label">Featured Product</span>
-              <span id="rrProduct" class="badge-product">National Mayo</span>
+          <div class="nfl-badge">
+            <div class="nfl-badge-logo">
+              <img src="assets/logo.svg" alt="NFL" onerror="this.src='assets/logo.png';this.onerror=null"/>
             </div>
+            <div class="nfl-badge-text">
+              <span class="nfl-badge-label">Featured Product</span>
+              <span class="nfl-badge-name" id="rrProduct">National Mayo</span>
+            </div>
+            <div class="nfl-badge-tag">&#11088; Must Have</div>
           </div>
 
-          <div class="rr-actions">
-            <button class="btn-primary" onclick="saveRecipe()">&#128190; Save Recipe</button>
-            <button class="btn-secondary" onclick="shareRecipe()">&#128228; Share</button>
+          <div class="rc-actions">
+            <button class="btn-primary rc-save" onclick="saveRecipe()">&#128190; Save Recipe</button>
+            <button class="btn-outline rc-share" onclick="shareRecipe()">&#128228; Share</button>
           </div>
         </div>
       </div>
@@ -356,23 +480,24 @@
 
     <!-- CHALLENGES -->
     <section class="page" id="pageChallenges" style="display:none">
-      <div class="page-hero">
-        <h2>&#127942; Weekly Challenges</h2>
-        <p>Join, cook, earn &mdash; dominate the leaderboard</p>
+      <div class="page-banner challenges-banner">
+        <img src="assets/logo.svg" alt="NFL" class="pb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>Weekly Challenges</h2>
+        <p>Cook. Post. Win. Repeat.</p>
       </div>
 
-      <div class="challenge-stats">
-        <div class="cstat">
-          <span class="cstat-n" id="csJoined">0</span>
-          <span>Joined</span>
+      <div class="ch-stats-row">
+        <div class="chs-card">
+          <span class="chs-val" id="csJoined">0</span>
+          <span class="chs-lbl">Joined</span>
         </div>
-        <div class="cstat">
-          <span class="cstat-n" id="csEarned">0</span>
-          <span>Pts Earned</span>
+        <div class="chs-card chs-gold">
+          <span class="chs-val" id="csEarned">0</span>
+          <span class="chs-lbl">Pts Earned</span>
         </div>
-        <div class="cstat">
-          <span class="cstat-n">5</span>
-          <span>Active</span>
+        <div class="chs-card">
+          <span class="chs-val">5</span>
+          <span class="chs-lbl">Active</span>
         </div>
       </div>
 
@@ -381,291 +506,301 @@
 
     <!-- COMMUNITY -->
     <section class="page" id="pageCommunity" style="display:none">
-      <div class="page-hero">
-        <h2>&#128247; Community Feed</h2>
-        <p>See what Pakistan is cooking!</p>
+      <div class="page-banner community-banner">
+        <img src="assets/logo.svg" alt="NFL" class="pb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>Community Feed</h2>
+        <p>84K+ chefs cooking zero waste</p>
       </div>
 
-      <div class="community-tabs">
-        <button class="ctab active" onclick="filterFeed('all', this)">All</button>
-        <button class="ctab" onclick="filterFeed('trending', this)">&#128293; Trending</button>
-        <button class="ctab" onclick="filterFeed('challenges', this)">&#127942; Challenges</button>
+      <div class="comm-tabs">
+        <button class="ctab active" onclick="filterFeed('all',this)">All</button>
+        <button class="ctab" onclick="filterFeed('trending',this)">&#128293; Trending</button>
+        <button class="ctab" onclick="filterFeed('challenges',this)">&#127942; Challenges</button>
       </div>
 
-      <button class="btn-primary post-btn" onclick="openPostModal()">
-        &#128247; Post Your Recipe
+      <button class="btn-primary btn-full post-recipe-btn" onclick="openPostModal()">
+        &#128247; Post Your Recipe &nbsp;&#8594;
       </button>
 
-      <div class="community-feed" id="communityFeed"></div>
+      <div class="comm-feed" id="communityFeed"></div>
     </section>
 
     <!-- LOYALTY WALLET -->
     <section class="page" id="pageWallet" style="display:none">
-      <div class="wallet-hero">
-        <img src="assets/logo.png" alt="NFL" class="wallet-logo"
-             onerror="this.style.display='none'" />
-        <div class="wallet-points-big">
-          <span class="wallet-pts" id="walletPts">0</span>
-          <span class="wallet-pts-lbl">Total Points</span>
+
+      <div class="wallet-card">
+        <div class="wc-bg-pattern"></div>
+        <div class="wc-logo">
+          <img src="assets/logo.svg" alt="NFL" onerror="this.src='assets/logo.png';this.onerror=null"/>
         </div>
-        <div class="wallet-tier" id="walletTier">
+        <div class="wc-pts-big" id="walletPts">0</div>
+        <div class="wc-pts-label">Total Points</div>
+        <div class="wc-tier" id="walletTierBadge">
           <span id="walletTierIcon">&#127807;</span>
           <span id="walletTierName">Starter</span>
         </div>
+        <div class="wc-campaign">#NoWasteMakeTaste</div>
       </div>
 
-      <div class="tier-progress-card card">
-        <div class="tp-header">
-          <span>Progress to next tier</span>
-          <span id="tpNext">Kitchen Explorer</span>
+      <div class="tier-progress card">
+        <div class="tp-row">
+          <span class="tp-label">Progress to next tier</span>
+          <span class="tp-next" id="tpNext">Kitchen Explorer</span>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="tierProgressFill" style="width:0%"></div>
+        <div class="tp-track">
+          <div class="tp-fill" id="tierProgressFill" style="width:0%"></div>
         </div>
-        <div class="tp-footer">
+        <div class="tp-row tp-nums">
           <span id="tpCurrent">0 pts</span>
-          <span id="tpTarget">500 pts</span>
+          <span id="tpTarget">500 pts needed</span>
         </div>
       </div>
 
-      <div class="section-header"><h3>All Tiers</h3></div>
+      <div class="section-head"><h3>Loyalty Tiers</h3></div>
       <div class="tiers-list" id="tiersList"></div>
 
-      <div class="section-header"><h3>Point History</h3></div>
-      <div class="points-history" id="pointsHistory"></div>
+      <div class="section-head"><h3>Point History</h3></div>
+      <div id="pointsHistory" class="pts-history"></div>
     </section>
 
     <!-- RECYCLE -->
     <section class="page" id="pageRecycle" style="display:none">
-      <div class="page-hero recycle-hero">
-        <h2>&#9851; Bottle Return</h2>
-        <p>Return National Mayo bottles, earn points, help the planet</p>
+      <div class="page-banner recycle-banner">
+        <img src="assets/logo.svg" alt="NFL" class="pb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>Smart Bottle Return</h2>
+        <p>Return National Mayo bottles &mdash; earn points, save the planet</p>
       </div>
 
-      <div class="recycle-machine card">
-        <div class="vm-visual">
-          <div class="vm-body">
+      <div class="vending-machine card">
+        <div class="vm-machine">
+          <div class="vm-header">
+            <img src="assets/logo.svg" alt="NFL" class="vm-brand-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+            <span class="vm-brand-text">National Foods Recycling Station</span>
+          </div>
+          <div class="vm-screen-outer">
             <div class="vm-screen">
-              <div class="vm-logo">
-                <img src="assets/logo.png" alt="NFL" onerror="this.style.display='none'" />
+              <div class="vm-screen-top">
+                <span class="vm-status-dot" id="vmDot"></span>
+                <span class="vm-status-txt" id="vmStatus">READY</span>
               </div>
-              <p class="vm-status" id="vmStatus">Ready to scan</p>
-              <div class="vm-scanner" id="vmScanner">
-                <div class="scanner-line"></div>
+              <div class="vm-screen-mid">
+                <div class="vm-pts-display">
+                  <span class="vm-pts-num" id="vmPtsDisplay">+25</span>
+                  <span class="vm-pts-unit">PTS</span>
+                </div>
+                <div class="vm-scan-line"><div class="vm-scan-beam"></div></div>
               </div>
+              <div class="vm-screen-bot">Scan bottle QR code to earn points</div>
             </div>
-            <div class="vm-slot"><span>INSERT BOTTLE</span></div>
+          </div>
+          <div class="vm-slot-row">
+            <div class="vm-slot">
+              <span class="vm-slot-text">INSERT BOTTLE HERE</span>
+            </div>
           </div>
         </div>
-        <button class="btn-primary vm-btn" id="scanBtn" onclick="scanBottle()">
-          &#128241; Scan Bottle QR
+        <button class="btn-primary vm-scan-btn" id="scanBtn" onclick="scanBottle()">
+          &#128241;&nbsp; Scan Bottle QR Code
         </button>
       </div>
 
-      <div class="recycle-stats">
-        <div class="rs-card">
-          <span class="rs-icon">&#9851;</span>
-          <span class="rs-val" id="rsBottles">0</span>
-          <span class="rs-lbl">Bottles Returned</span>
+      <div class="recycle-metrics">
+        <div class="rm-card rm-green">
+          <span class="rm-icon">&#9851;</span>
+          <span class="rm-val" id="rsBottles">0</span>
+          <span class="rm-lbl">Bottles Returned</span>
         </div>
-        <div class="rs-card">
-          <span class="rs-icon">&#129514;</span>
-          <span class="rs-val" id="rsPlastic">0g</span>
-          <span class="rs-lbl">Plastic Saved</span>
+        <div class="rm-card rm-blue">
+          <span class="rm-icon">&#129514;</span>
+          <span class="rm-val" id="rsPlastic">0g</span>
+          <span class="rm-lbl">Plastic Saved</span>
         </div>
-        <div class="rs-card">
-          <span class="rs-icon">&#127758;</span>
-          <span class="rs-val" id="rsCarbon">0g</span>
-          <span class="rs-lbl">CO2 Reduced</span>
+        <div class="rm-card rm-teal">
+          <span class="rm-icon">&#127758;</span>
+          <span class="rm-val" id="rsCarbon">0g</span>
+          <span class="rm-lbl">CO&#8322; Reduced</span>
         </div>
-        <div class="rs-card">
-          <span class="rs-icon">&#11088;</span>
-          <span class="rs-val" id="rsPoints">0</span>
-          <span class="rs-lbl">Points Earned</span>
+        <div class="rm-card rm-gold">
+          <span class="rm-icon">&#11088;</span>
+          <span class="rm-val" id="rsPoints">0</span>
+          <span class="rm-lbl">Points Earned</span>
         </div>
       </div>
 
-      <div class="recycle-history card">
-        <h4>Return History</h4>
-        <div id="recycleHistory" class="rh-list"></div>
+      <div class="card recycle-hist-card">
+        <div class="rhc-head">
+          <span>Return History</span>
+          <img src="assets/logo.svg" alt="NFL" class="rhc-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        </div>
+        <div id="recycleHistory" class="rh-rows"></div>
       </div>
     </section>
 
     <!-- SUSTAINABILITY -->
     <section class="page" id="pageSustain" style="display:none">
-      <div class="page-hero sustain-hero">
-        <h2>&#127758; Sustainability</h2>
-        <p>Your personal environmental impact</p>
+      <div class="page-banner sustain-banner">
+        <img src="assets/logo.svg" alt="NFL" class="pb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>Your Green Impact</h2>
+        <p>Every meal saved counts &mdash; here's your footprint</p>
       </div>
 
-      <div class="sustain-impact-grid">
-        <div class="si-card si-meals">
-          <div class="si-icon">&#127860;</div>
-          <div class="si-val" id="siMeals">0</div>
-          <div class="si-lbl">Meals Saved</div>
+      <div class="sustain-grid">
+        <div class="sg-card sg-red">
+          <span class="sg-icon">&#127860;</span>
+          <span class="sg-val" id="siMeals">0</span>
+          <span class="sg-lbl">Meals Saved</span>
         </div>
-        <div class="si-card si-food">
-          <div class="si-icon">&#127807;</div>
-          <div class="si-val" id="siFoodWaste">0.0 kg</div>
-          <div class="si-lbl">Food Waste Reduced</div>
+        <div class="sg-card sg-green">
+          <span class="sg-icon">&#127807;</span>
+          <span class="sg-val" id="siFoodWaste">0.0 kg</span>
+          <span class="sg-lbl">Food Waste Reduced</span>
         </div>
-        <div class="si-card si-bottles">
-          <div class="si-icon">&#9851;</div>
-          <div class="si-val" id="siBottlesR">0</div>
-          <div class="si-lbl">Bottles Recycled</div>
+        <div class="sg-card sg-blue">
+          <span class="sg-icon">&#9851;</span>
+          <span class="sg-val" id="siBottlesR">0</span>
+          <span class="sg-lbl">Bottles Recycled</span>
         </div>
-        <div class="si-card si-plastic">
-          <div class="si-icon">&#129514;</div>
-          <div class="si-val" id="siPlastic">0g</div>
-          <div class="si-lbl">Plastic Diverted</div>
+        <div class="sg-card sg-purple">
+          <span class="sg-icon">&#129514;</span>
+          <span class="sg-val" id="siPlastic">0g</span>
+          <span class="sg-lbl">Plastic Diverted</span>
         </div>
-        <div class="si-card si-carbon">
-          <div class="si-icon">&#127758;</div>
-          <div class="si-val" id="siCarbon">0g</div>
-          <div class="si-lbl">CO2 Avoided</div>
+        <div class="sg-card sg-orange">
+          <span class="sg-icon">&#127758;</span>
+          <span class="sg-val" id="siCarbon">0g</span>
+          <span class="sg-lbl">CO&#8322; Avoided</span>
         </div>
-        <div class="si-card si-community">
-          <div class="si-icon">&#128101;</div>
-          <div class="si-val">47,812</div>
-          <div class="si-lbl">Community Impact</div>
+        <div class="sg-card sg-gold">
+          <span class="sg-icon">&#128101;</span>
+          <span class="sg-val">47,812</span>
+          <span class="sg-lbl">Community Meals Saved</span>
         </div>
       </div>
 
-      <div class="sustain-progress card">
-        <h4>Monthly Goals</h4>
-        <div class="goal-item">
-          <div class="goal-header">
+      <div class="card goals-card">
+        <div class="gc-head">
+          <h4>&#127919; Monthly Goals</h4>
+          <img src="assets/logo.svg" alt="NFL" class="gc-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        </div>
+        <div class="goal-row">
+          <div class="gr-info">
             <span>&#127860; Meals Saved</span>
             <span id="goalMeals">0 / 10</span>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill green" id="pfMeals" style="width:0%"></div>
-          </div>
+          <div class="gr-track"><div class="gr-fill gf-red" id="pfMeals" style="width:0%"></div></div>
         </div>
-        <div class="goal-item">
-          <div class="goal-header">
+        <div class="goal-row">
+          <div class="gr-info">
             <span>&#9851; Bottles Returned</span>
             <span id="goalBottles">0 / 5</span>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill green" id="pfBottles" style="width:0%"></div>
-          </div>
+          <div class="gr-track"><div class="gr-fill gf-green" id="pfBottles" style="width:0%"></div></div>
         </div>
-        <div class="goal-item">
-          <div class="goal-header">
-            <span>&#127942; Challenges</span>
+        <div class="goal-row">
+          <div class="gr-info">
+            <span>&#127942; Challenges Joined</span>
             <span id="goalChallenges">0 / 3</span>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill green" id="pfChallenges" style="width:0%"></div>
-          </div>
+          <div class="gr-track"><div class="gr-fill gf-gold" id="pfChallenges" style="width:0%"></div></div>
         </div>
       </div>
 
-      <div class="sustain-cert card">
-        <div class="cert-header">
-          <img src="assets/logo.png" alt="NFL" onerror="this.style.display='none'" />
-          <h4>Eco Warrior Certificate</h4>
+      <div class="cert-card card">
+        <div class="cc-header">
+          <img src="assets/logo.svg" alt="NFL" class="cc-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          <div class="cc-titles">
+            <div class="cc-eyebrow">National Foods</div>
+            <h4>Eco Warrior Certificate</h4>
+          </div>
         </div>
         <p>You're making a real difference! Keep saving food and returning bottles to earn your official NFL Sustainability Champion badge.</p>
-        <div class="cert-progress">
-          <span id="certPts">0</span> / 1000 pts to Champion Badge
+        <div class="cc-progress">
+          <div class="cc-pts-text"><span id="certPts">0</span> / 1000 pts to Champion Badge</div>
+          <div class="cc-pts-bar"><div class="cc-pts-fill" id="ccFill" style="width:0%"></div></div>
         </div>
       </div>
     </section>
 
     <!-- REWARDS -->
     <section class="page" id="pageRewards" style="display:none">
-      <div class="page-hero rewards-hero">
-        <h2>&#127873; Rewards Store</h2>
-        <p>Spend your points on exclusive National Foods rewards</p>
+      <div class="page-banner rewards-banner">
+        <img src="assets/logo.svg" alt="NFL" class="pb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>Rewards Store</h2>
+        <p>Spend points, unlock exclusive National Foods rewards</p>
       </div>
 
-      <div class="wallet-mini">
-        <span>&#11088; Your Balance:</span>
-        <span class="wm-pts" id="rewardsPts">0 pts</span>
+      <div class="balance-bar">
+        <div class="bb-left">
+          <img src="assets/logo.svg" alt="NFL" class="bb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          <span>Your Balance</span>
+        </div>
+        <span class="bb-pts" id="rewardsPts">0 pts</span>
       </div>
 
-      <div class="section-header"><h3>Available Rewards</h3></div>
+      <div class="section-head"><h3>Available Rewards</h3></div>
       <div class="rewards-grid" id="rewardsGrid"></div>
 
-      <div class="section-header"><h3>Redeemed</h3></div>
+      <div class="section-head"><h3>Redeemed Rewards</h3></div>
       <div class="redeemed-list" id="redeemedList">
-        <p class="empty-state">No rewards redeemed yet. Start earning!</p>
+        <div class="empty-msg">
+          <span>&#127873;</span>
+          <p>No rewards redeemed yet. Start earning points!</p>
+        </div>
       </div>
     </section>
 
     <!-- ADMIN DASHBOARD -->
     <section class="page" id="pageAdmin" style="display:none">
-      <div class="page-hero admin-hero">
-        <h2>&#128202; Brand Dashboard</h2>
-        <p>National Foods &mdash; #NoWasteMakeTaste Analytics</p>
+      <div class="page-banner admin-banner">
+        <img src="assets/logo.svg" alt="NFL" class="pb-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h2>Brand Dashboard</h2>
+        <p>National Foods &mdash; #NoWasteMakeTaste Real-Time Analytics</p>
       </div>
 
-      <div class="admin-kpi-grid">
-        <div class="kpi-card">
-          <span class="kpi-icon">&#128101;</span>
-          <span class="kpi-val">84,291</span>
-          <span class="kpi-lbl">Total Users</span>
-          <span class="kpi-trend up">&#8593; 12%</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-icon">&#128242;</span>
-          <span class="kpi-val">112,540</span>
-          <span class="kpi-lbl">App Downloads</span>
-          <span class="kpi-trend up">&#8593; 8%</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-icon">&#129302;</span>
-          <span class="kpi-val">340,872</span>
-          <span class="kpi-lbl">Recipes Generated</span>
-          <span class="kpi-trend up">&#8593; 23%</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-icon">&#127942;</span>
-          <span class="kpi-val">28,450</span>
-          <span class="kpi-lbl">Challenges Joined</span>
-          <span class="kpi-trend up">&#8593; 17%</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-icon">&#9851;</span>
-          <span class="kpi-val">19,834</span>
-          <span class="kpi-lbl">Bottles Returned</span>
-          <span class="kpi-trend up">&#8593; 31%</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-icon">&#127873;</span>
-          <span class="kpi-val">6,291</span>
-          <span class="kpi-lbl">Rewards Redeemed</span>
-          <span class="kpi-trend up">&#8593; 5%</span>
-        </div>
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-red"><span class="kpi-icon">&#128101;</span><span class="kpi-val">84,291</span><span class="kpi-lbl">Total Users</span><span class="kpi-trend">&#8593; 12%</span></div>
+        <div class="kpi-card kpi-blue"><span class="kpi-icon">&#128242;</span><span class="kpi-val">112,540</span><span class="kpi-lbl">Downloads</span><span class="kpi-trend">&#8593; 8%</span></div>
+        <div class="kpi-card kpi-purple"><span class="kpi-icon">&#129302;</span><span class="kpi-val">340,872</span><span class="kpi-lbl">Recipes Generated</span><span class="kpi-trend">&#8593; 23%</span></div>
+        <div class="kpi-card kpi-gold"><span class="kpi-icon">&#127942;</span><span class="kpi-val">28,450</span><span class="kpi-lbl">Challenges Joined</span><span class="kpi-trend">&#8593; 17%</span></div>
+        <div class="kpi-card kpi-green"><span class="kpi-icon">&#9851;</span><span class="kpi-val">19,834</span><span class="kpi-lbl">Bottles Returned</span><span class="kpi-trend">&#8593; 31%</span></div>
+        <div class="kpi-card kpi-orange"><span class="kpi-icon">&#127873;</span><span class="kpi-val">6,291</span><span class="kpi-lbl">Rewards Redeemed</span><span class="kpi-trend">&#8593; 5%</span></div>
       </div>
 
-      <div class="admin-charts-row">
-        <div class="admin-chart-card card">
-          <h4>Top Leftover Ingredients</h4>
+      <div class="admin-charts">
+        <div class="card ac-card">
+          <div class="acc-head">
+            <h4>Top Leftover Ingredients</h4>
+            <img src="assets/logo.svg" alt="NFL" class="acc-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          </div>
           <div class="bar-chart" id="ingredientChart"></div>
         </div>
-        <div class="admin-chart-card card">
-          <h4>Most Used NFL Products</h4>
+        <div class="card ac-card">
+          <div class="acc-head">
+            <h4>Most Used Products</h4>
+            <img src="assets/logo.svg" alt="NFL" class="acc-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          </div>
           <div class="bar-chart" id="productChart"></div>
+        </div>
+        <div class="card ac-card">
+          <div class="acc-head">
+            <h4>Weekly Engagement</h4>
+          </div>
+          <div class="line-chart" id="engagementChart"></div>
         </div>
       </div>
 
-      <div class="admin-chart-card card">
-        <h4>Weekly User Engagement</h4>
-        <div class="line-chart" id="engagementChart"></div>
-      </div>
-
-      <div class="admin-sustain card">
-        <h4>&#127758; Sustainability Impact Summary</h4>
-        <div class="as-grid">
-          <div class="as-item"><span class="as-val">47,812</span><span>Meals Saved</span></div>
-          <div class="as-item"><span class="as-val">14.3 T</span><span>Food Waste Reduced</span></div>
-          <div class="as-item"><span class="as-val">19,834</span><span>Bottles Recycled</span></div>
-          <div class="as-item"><span class="as-val">3.9 T</span><span>Plastic Diverted</span></div>
-          <div class="as-item"><span class="as-val">8.2 T</span><span>CO2 Avoided</span></div>
-          <div class="as-item"><span class="as-val">84K+</span><span>Active Users</span></div>
+      <div class="card admin-impact">
+        <div class="ai-head">
+          <img src="assets/logo.svg" alt="NFL" class="ai-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+          <h4>Sustainability Impact</h4>
+        </div>
+        <div class="ai-grid">
+          <div class="ai-item"><span class="ai-val">47,812</span><span>Meals Saved</span></div>
+          <div class="ai-item"><span class="ai-val">14.3 T</span><span>Food Waste Reduced</span></div>
+          <div class="ai-item"><span class="ai-val">19,834</span><span>Bottles Recycled</span></div>
+          <div class="ai-item"><span class="ai-val">3.9 T</span><span>Plastic Diverted</span></div>
+          <div class="ai-item"><span class="ai-val">8.2 T</span><span>CO&#8322; Avoided</span></div>
+          <div class="ai-item"><span class="ai-val">84K+</span><span>Active Users</span></div>
         </div>
       </div>
     </section>
@@ -673,96 +808,74 @@
     <!-- PITCH -->
     <section class="page" id="pagePitch" style="display:none">
       <div class="pitch-hero">
-        <img src="assets/logo.png" alt="National Foods" class="pitch-logo"
-             onerror="this.style.display='none'" />
+        <div class="pitch-hero-orbs">
+          <div class="pho-1"></div>
+          <div class="pho-2"></div>
+        </div>
+        <img src="assets/logo.svg" alt="National Foods" class="pitch-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
         <h2>Why National Foods Wins</h2>
-        <p class="pitch-sub">The strategic case for #NoWasteMakeTaste</p>
+        <p>The strategic case for #NoWasteMakeTaste</p>
       </div>
 
-      <div class="pitch-cards">
-        <div class="pitch-card">
-          <span class="pc-icon">&#128200;</span>
-          <h4>Drives Mayo Sales</h4>
-          <p>Every AI-generated recipe integrates National Mayo &mdash; turning passive consumers into active daily users and growing repeat purchase rates.</p>
-        </div>
-        <div class="pitch-card">
-          <span class="pc-icon">&#128202;</span>
-          <h4>First-Party Consumer Data</h4>
-          <p>Ingredient inputs, recipe preferences, and challenge participation build a rich consumer data asset with full PDPA compliance.</p>
-        </div>
-        <div class="pitch-card">
-          <span class="pc-icon">&#10084;</span>
-          <h4>Loyalty &amp; Retention</h4>
-          <p>Five-tier loyalty system with rewards, badges, and streaks creates powerful switching costs and brand affinity across Gen Z and millennials.</p>
-        </div>
-        <div class="pitch-card">
-          <span class="pc-icon">&#127758;</span>
-          <h4>Genuine CSR Impact</h4>
-          <p>Bottle return program and food-waste reduction create measurable environmental KPIs that strengthen NFL's sustainability narrative.</p>
-        </div>
-        <div class="pitch-card">
-          <span class="pc-icon">&#128247;</span>
-          <h4>UGC Content Engine</h4>
-          <p>Community feed and challenge mechanics generate thousands of user-created recipe posts &mdash; organic social amplification at zero media cost.</p>
-        </div>
-        <div class="pitch-card">
-          <span class="pc-icon">&#127942;</span>
-          <h4>Competitive Moat</h4>
-          <p>AI-powered recipe generation + loyalty + recycling in one app positions NFL as Pakistan's most innovative FMCG brand.</p>
-        </div>
+      <div class="pitch-grid">
+        <div class="pc-card pc-red"><span class="pc-icon">&#128200;</span><h4>Drives Mayo Sales</h4><p>Every AI recipe integrates National Mayo &mdash; converting passive buyers into daily active users and growing repeat purchase by an estimated 34%.</p></div>
+        <div class="pc-card pc-blue"><span class="pc-icon">&#128202;</span><h4>First-Party Data</h4><p>Ingredient inputs, preferences, and challenge data build a rich consumer asset &mdash; Pakistan's most valuable FMCG dataset with full PDPA compliance.</p></div>
+        <div class="pc-card pc-purple"><span class="pc-icon">&#10084;</span><h4>Brand Loyalty</h4><p>5-tier gamified loyalty with rewards, badges, and streaks creates powerful switching costs and deep Gen Z brand affinity.</p></div>
+        <div class="pc-card pc-green"><span class="pc-icon">&#127758;</span><h4>Genuine CSR</h4><p>Bottle return program and food-waste reduction create measurable SDG-aligned KPIs that strengthen NFL's sustainability narrative with real numbers.</p></div>
+        <div class="pc-card pc-orange"><span class="pc-icon">&#128247;</span><h4>UGC Engine</h4><p>Challenges and community posts generate thousands of recipe videos at zero media cost &mdash; organic social amplification multiplied across 84K users.</p></div>
+        <div class="pc-card pc-gold"><span class="pc-icon">&#127942;</span><h4>Competitive Moat</h4><p>AI recipes + loyalty + recycling in one app positions NFL as Pakistan's most innovative FMCG brand &mdash; years ahead of any competitor.</p></div>
       </div>
 
       <div class="pitch-cta card">
+        <img src="assets/logo.svg" alt="NFL" class="pca-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
         <h3>Ready to Launch?</h3>
-        <p>This prototype demonstrates the full consumer journey. The complete platform can go live in 8 weeks with the existing tech stack.</p>
-        <div class="pitch-metrics">
-          <div class="pm"><span class="pm-v">8 wks</span><span>To Launch</span></div>
-          <div class="pm"><span class="pm-v">0 backend</span><span>Required (MVP)</span></div>
-          <div class="pm"><span class="pm-v">&#8734;</span><span>Brand Value</span></div>
+        <p>Full consumer journey demonstrated. Platform can go live in 8 weeks with zero backend required for MVP.</p>
+        <div class="pca-metrics">
+          <div class="pcam"><span class="pcam-v">8 wks</span><span>To Launch</span></div>
+          <div class="pcam"><span class="pcam-v">0</span><span>Backend Needed</span></div>
+          <div class="pcam"><span class="pcam-v">84K+</span><span>Users Ready</span></div>
         </div>
-        <button class="btn-primary" onclick="showToast('Let\'s make it happen! &#128640;', 'success')">
-          &#128640; Let's Make It Happen
+        <button class="btn-primary btn-full" onclick="showToast('Let\'s do this! National Foods leads! &#128640;','gold')">
+          &#128640; Launch #NoWasteMakeTaste
         </button>
       </div>
     </section>
 
   </main>
 
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav" id="bottomNav">
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
     <button class="nav-btn active" data-page="home" onclick="navigate('home')">
-      <span class="nav-icon">&#127968;</span>
-      <span>Home</span>
+      <span class="nb-icon">&#127968;</span><span class="nb-lbl">Home</span>
     </button>
     <button class="nav-btn" data-page="recipe" onclick="navigate('recipe')">
-      <span class="nav-icon">&#129302;</span>
-      <span>AI Chef</span>
+      <span class="nb-icon">&#129302;</span><span class="nb-lbl">AI Chef</span>
     </button>
     <button class="nav-btn" data-page="challenges" onclick="navigate('challenges')">
-      <span class="nav-icon">&#127942;</span>
-      <span>Challenges</span>
+      <span class="nb-icon">&#127942;</span><span class="nb-lbl">Challenges</span>
     </button>
     <button class="nav-btn" data-page="community" onclick="navigate('community')">
-      <span class="nav-icon">&#128247;</span>
-      <span>Community</span>
+      <span class="nb-icon">&#128247;</span><span class="nb-lbl">Community</span>
     </button>
     <button class="nav-btn" data-page="wallet" onclick="navigate('wallet')">
-      <span class="nav-icon">&#11088;</span>
-      <span>Wallet</span>
+      <span class="nb-icon">&#11088;</span><span class="nb-lbl">Wallet</span>
     </button>
-    <button class="nav-btn more-btn" onclick="toggleMoreMenu()">
-      <span class="nav-icon">&#9776;</span>
-      <span>More</span>
+    <button class="nav-btn more-btn" onclick="toggleMore()">
+      <span class="nb-icon">&#9776;</span><span class="nb-lbl">More</span>
     </button>
   </nav>
 
-  <!-- More Menu -->
+  <!-- MORE MENU -->
   <div class="more-menu" id="moreMenu" style="display:none">
-    <button onclick="navigate('recycle'); toggleMoreMenu()">&#9851; Return Bottle</button>
-    <button onclick="navigate('sustain'); toggleMoreMenu()">&#127758; Sustainability</button>
-    <button onclick="navigate('rewards'); toggleMoreMenu()">&#127873; Rewards</button>
-    <button onclick="navigate('admin'); toggleMoreMenu()">&#128202; Brand Dashboard</button>
-    <button onclick="navigate('pitch'); toggleMoreMenu()">&#128188; Why NFL Wins</button>
+    <div class="mm-head">
+      <img src="assets/logo.svg" alt="NFL" class="mm-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+      <span>More Options</span>
+    </div>
+    <button onclick="navigate('recycle');toggleMore()">&#9851; Return Bottle <span class="mm-pts">+25 pts</span></button>
+    <button onclick="navigate('sustain');toggleMore()">&#127758; Sustainability Dashboard</button>
+    <button onclick="navigate('rewards');toggleMore()">&#127873; Rewards Store</button>
+    <button onclick="navigate('admin');toggleMore()">&#128202; Brand Dashboard</button>
+    <button onclick="navigate('pitch');toggleMore()">&#128188; Why NFL Wins</button>
   </div>
 
 </div><!-- end #app -->
@@ -770,27 +883,31 @@
 <!-- POST MODAL -->
 <div class="modal-overlay" id="postModal" style="display:none" onclick="closeModal('postModal')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h3>&#128247; Share Your Recipe</h3>
-      <button class="modal-close" onclick="closeModal('postModal')">&#10005;</button>
+    <div class="modal-hd">
+      <div class="modal-hd-left">
+        <img src="assets/logo.svg" alt="NFL" class="modal-logo" onerror="this.src='assets/logo.png';this.onerror=null"/>
+        <h3>Share Your Recipe</h3>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal('postModal')">&#10005;</button>
     </div>
     <div class="modal-body">
-      <div class="upload-zone" onclick="simulateUpload()">
-        <span class="upload-icon" id="uploadIcon">&#128247;</span>
-        <p id="uploadText">Tap to add photo</p>
+      <div class="upload-zone" id="uploadZone" onclick="simulateUpload()">
+        <span id="uploadIcon" class="uz-icon">&#128247;</span>
+        <span id="uploadText" class="uz-text">Tap to add your photo</span>
+        <span class="uz-sub">Your delicious creation!</span>
       </div>
       <div class="form-group">
-        <label>Recipe Name</label>
-        <input type="text" id="postName" class="form-input" placeholder="e.g. My Amazing Mayo Wrap" />
+        <label class="fg-label">Recipe Name *</label>
+        <input type="text" id="postName" class="form-input" placeholder="e.g. My Epic Mayo Chicken Wrap"/>
       </div>
       <div class="form-group">
-        <label>Description</label>
-        <textarea id="postDesc" class="form-input" rows="3" placeholder="Tell us about your recipe..."></textarea>
+        <label class="fg-label">Description</label>
+        <textarea id="postDesc" class="form-input form-textarea" rows="3" placeholder="Tell the community about your zero-waste creation..."></textarea>
       </div>
       <div class="form-group">
-        <label>Challenge Tag</label>
+        <label class="fg-label">Challenge Tag</label>
         <select id="postChallenge" class="form-select">
-          <option value="">No challenge</option>
+          <option value="">No challenge tag</option>
           <option value="#RotiReinvention">#RotiReinvention</option>
           <option value="#LeftoverChicken">#LeftoverChicken</option>
           <option value="#MayoMaster">#MayoMaster</option>
@@ -799,9 +916,9 @@
         </select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('postModal')">Cancel</button>
-      <button class="btn-primary" onclick="submitPost()">Share +50 pts &#128640;</button>
+    <div class="modal-ft">
+      <button class="btn-outline" onclick="closeModal('postModal')">Cancel</button>
+      <button class="btn-primary" onclick="submitPost()">Share &amp; Earn +50 pts &#128640;</button>
     </div>
   </div>
 </div>

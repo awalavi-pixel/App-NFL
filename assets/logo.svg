@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <clipPath id="circleClip">
+      <circle cx="100" cy="100" r="96"/>
+    </clipPath>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F5F5F5"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="rgba(0,0,0,0.2)"/>
+    </filter>
+  </defs>
+
+  <!-- Outer ring -->
+  <circle cx="100" cy="100" r="98" fill="#C8960C" filter="url(#shadow)"/>
+  <circle cx="100" cy="100" r="94" fill="white"/>
+
+  <!-- Rainbow arc stripes at top -->
+  <!-- Red stripe -->
+  <path d="M 12 90 A 88 88 0 0 1 188 90" stroke="#C62828" stroke-width="14" fill="none" clip-path="url(#circleClip)"/>
+  <!-- Orange stripe -->
+  <path d="M 18 104 A 82 82 0 0 1 182 104" stroke="#E64A19" stroke-width="12" fill="none" clip-path="url(#circleClip)"/>
+  <!-- Gold/Yellow stripe -->
+  <path d="M 24 117 A 76 76 0 0 1 176 117" stroke="#F9A825" stroke-width="10" fill="none" clip-path="url(#circleClip)"/>
+  <!-- Light cream fill below arcs -->
+  <rect x="6" y="118" width="188" height="60" fill="white" clip-path="url(#circleClip)"/>
+
+  <!-- White overlay to clean up top portion -->
+  <rect x="6" y="4" width="188" height="72" fill="white" clip-path="url(#circleClip)"/>
+
+  <!-- National text -->
+  <text x="100" y="138" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="26" fill="#1A237E" letter-spacing="-0.5">National</text>
+
+  <!-- Foods text -->
+  <text x="100" y="160" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="22" fill="#1A237E" letter-spacing="1">FOODS</text>
+
+  <!-- Gold ribbon banner at bottom -->
+  <g transform="translate(100, 180)">
+    <!-- Ribbon tails -->
+    <polygon points="-68,0 -52,-14 -52,14" fill="#C8960C"/>
+    <polygon points="68,0 52,-14 52,14" fill="#C8960C"/>
+    <!-- Main ribbon body -->
+    <rect x="-58" y="-14" width="116" height="28" rx="4" fill="#F9A825"/>
+    <rect x="-55" y="-11" width="110" height="22" rx="3" fill="#FFC107"/>
+    <!-- SINCE 1970 text -->
+    <text x="0" y="5" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="11" fill="#B71C1C" letter-spacing="1.5">SINCE 1970</text>
+  </g>
+
+  <!-- Outer gold border ring -->
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#C8960C" stroke-width="3"/>
+</svg>
